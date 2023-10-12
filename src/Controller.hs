@@ -14,11 +14,6 @@ step :: Float -> GameState -> IO GameState
 step secs gstate
   
   = do
-    
-    let var = "test"
-
-    print $ var
-    
     return $ gstate { elapsedTime = elapsedTime gstate + secs }
 
 -- | Handle user input

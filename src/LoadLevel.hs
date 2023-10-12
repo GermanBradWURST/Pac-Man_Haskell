@@ -2,16 +2,15 @@ module LoadLevel where
 
 type Point = (Int, Int)
 type Tile = (Point, Tiletype)
-data Tiletype = Empty | Pellet | Wall | SuperPellet | Barrier
+data Tiletype = Empty | Pellet | Wall | SuperPellet | Barrier deriving (Show)
 
 type Maze = [[Tile]]
 
-makeMaze :: Maze
-makeMaze = map makeLine (zip (0..) file)
-        where file <- lines readFile "src/Level1.txt"
+makeMaze :: [String] -> Maze
+makeMaze file = map makeLine (zip [0..] file)
 
 makeLine :: (Int, String) -> [Tile]
-makeLine (y, s) = map (mergeInfo y) (map makeTile (zip (0..) s))
+makeLine (y, s) = map (mergeInfo y) (map makeTile (zip [0..] s))
 
 makeTile :: (Int, Char) -> (Int, Tiletype)
 makeTile (x, c) | c == '#' = (x, Wall)
