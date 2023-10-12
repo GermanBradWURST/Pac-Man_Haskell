@@ -1,5 +1,5 @@
 module Ghost where
-{-}
+{-
 
 data Ghost = G1 Point Direction Mode | G2 Point Direction Mode | G3 Point Direction Mode | G4 Direction Mode Mode
 
@@ -13,6 +13,6 @@ ghostMove g@(a p d m) _ _ _ | m == Frightened = undefined
 scatterMove :: Ghost -> PlayField -> Ghost
 scatterMove g@(a p d m) pf@() |
                               |
-                              |
+                              | -}
 
 
