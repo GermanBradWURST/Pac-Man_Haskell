@@ -18,4 +18,5 @@ executable gloss-counter
                      , View
                      , Ghost
                      , LoadLevel
+                     , LoadImages
   default-language:    Haskell2010

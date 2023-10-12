@@ -2,19 +2,16 @@
 --   which represent the state of the game
 module Model where
 import LoadLevel
+import Graphics.Gloss
 
-data InfoToShow = ShowNothing
-                | ShowANumber Int
-                | ShowAChar   Char
-
-nO_SECS_BETWEEN_CYCLES :: Float
-nO_SECS_BETWEEN_CYCLES = 5
+data ViewState = Running | Paused
 
 data GameState = GameState {
-                   infoToShow  :: InfoToShow
+                   viewState  :: ViewState
                  , elapsedTime :: Float
                  , maze :: Maze
+                 , loadpics :: [Picture]
                  }
 
-initialState :: Maze -> GameState
-initialState = GameState ShowNothing 0
+initialState :: [Picture] -> Maze -> GameState
+initialState p m = GameState Running 0 m p

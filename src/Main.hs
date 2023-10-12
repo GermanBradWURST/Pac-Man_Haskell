@@ -5,22 +5,31 @@ import Model
 import View
 import Ghost
 import LoadLevel
+import LoadImages
 
 import Graphics.Gloss.Interface.IO.Game
     ( black, Display(InWindow), playIO )
+import Graphics.Gloss
 
 main :: IO ()
 main = do
 
     file <- readFile "src/Level1.txt"
 
+    
+
     let _lines = lines file
     let maze = makeMaze _lines
 
-    playIO (InWindow "Counter" (400, 400) (0, 0)) -- Or FullScreen
+    bgbmp <- loadBMP "src/images/back_g_e.bmp"
+    pelletbmp <- loadBMP "src/images/dot.bmp"
+    pacmanbmp <- loadBMP "src/images/pacman1.bmp"
+    let listp = [bgbmp, pelletbmp, pacmanbmp]
+
+    playIO (InWindow "Counter" (224, 248) (0, 0)) -- Or FullScreen
               white            -- Background color
               60               -- Frames per second
-              initialState     -- Initial state
+              (initialState listp maze)     -- Initial state
               view             -- View function
               input            -- Event function
               step             -- Step function
