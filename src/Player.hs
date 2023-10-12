@@ -1,19 +1,19 @@
 module Player where
 
-import Controller
-import Model
-import View
-import Main
 
 type Point = (Int, Int)
-data Direction = Up | Down | Left | Right
+data Direction = PUp | PDown | PLeft | PRight deriving (Eq)
 
-data PacMan = P Point Direction
+data PacMan = MakePacMan {
+    position :: Point
+    , direction :: Direction
+}
 
 
 --handling movement of PacMan
-changeDirection :: Pacman -> Direction -> Pacman
-changeDirection (P (x,y) pd) d = (P (x,y) d)
+changeDirection :: PacMan -> Direction -> PacMan
+changeDirection (MakePacMan (x,y) pd) d = (MakePacMan (x,y) d)
 
-movePacman :: Pacman -> Pacman
+movePacman :: PacMan -> PacMan
+movePacman = undefined
                                 

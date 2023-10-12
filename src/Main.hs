@@ -6,6 +6,7 @@ import View
 import Ghost
 import LoadLevel
 import LoadImages
+import Player
 
 import Graphics.Gloss.Interface.IO.Game
     ( black, Display(InWindow), playIO )
@@ -25,11 +26,12 @@ main = do
     pelletbmp <- loadBMP "src/images/dot.bmp"
     pacmanbmp <- loadBMP "src/images/pacman1.bmp"
     let listp = [bgbmp, pelletbmp, pacmanbmp]
+    let pm = MakePacMan (23, 14) Player.PLeft
 
-    playIO (InWindow "Counter" (224, 248) (0, 0)) -- Or FullScreen
+    playIO (InWindow "Counter" (448, 496) (0, 0)) -- Or FullScreen
               white            -- Background color
               60               -- Frames per second
-              (initialState listp maze)     -- Initial state
+              (initialState pm listp maze)     -- Initial state
               view             -- View function
               input            -- Event function
               step             -- Step function
