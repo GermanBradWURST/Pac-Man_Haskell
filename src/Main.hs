@@ -18,9 +18,9 @@ main = do
     let maze = makeMaze _lines
 
     playIO (InWindow "Counter" (400, 400) (0, 0)) -- Or FullScreen
-              black            -- Background color
-              10               -- Frames per second
-              (initialState maze)     -- Initial state
+              white            -- Background color
+              60               -- Frames per second
+              initialState     -- Initial state
               view             -- View function
               input            -- Event function
               step             -- Step function
