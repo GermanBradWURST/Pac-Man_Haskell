@@ -2,7 +2,7 @@ module LoadLevel where
 
 type Point = (Int, Int)
 type Tile = (Point, Tiletype)
-data Tiletype = Empty | Pellet | Wall | SuperPellet | Barrier deriving (Show)
+data Tiletype = Empty | Pellet | Wall | SuperPellet | Barrier deriving (Show, Eq)
 
 type Maze = [[Tile]]
 

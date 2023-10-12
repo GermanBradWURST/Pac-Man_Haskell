@@ -6,6 +6,7 @@ import Graphics.Gloss
 import Model
 import Player
 
+
 view :: GameState -> IO Picture
 view = return . viewPure
 
@@ -17,15 +18,15 @@ viewPure gstate = case viewState gstate of
           pictures [scaledmap, pman]
   _ -> color green (text "test")
 
-ptrans :: Picture -> PacMan -> Picture
-ptrans pict pacman = translate ((448/26)*x-224) ((496/31)*y-248) d
+ptrans :: Picture -> Pacman -> Picture
+ptrans pict (P (xs, ys) direc) = translate ((448/26)*x-224) ((496/31)*y-248) d
         where
-                pos = position pacman
+                pos = (xs,ys)
                 x = (fromIntegral . fst) pos
                 y = (fromIntegral . snd) pos
-                dp = direction pacman
-                d | dp == PUp = Rotate (-90) pict
-                  | dp == PRight = pict
-                  | dp == PLeft = Rotate 180 pict
-                  | dp == PDown = Rotate 90 pict
+                dp = direc
+                d | dp == GoUp = Rotate (-90) pict
+                  | dp == GoRight = pict
+                  | dp == GoLeft = Rotate 180 pict
+                  | dp == GoDown = Rotate 90 pict
                   | otherwise = pict

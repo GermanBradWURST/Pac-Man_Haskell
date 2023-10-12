@@ -10,10 +10,10 @@ data ViewState = Running | Paused
 data GameState = GameState {
                    viewState  :: ViewState
                  , elapsedTime :: Float
-                 , player :: PacMan
+                 , player :: Pacman
                  , maze :: Maze
                  , loadpics :: [Picture]
                  }
 
-initialState :: PacMan -> [Picture] -> Maze -> GameState
+initialState :: Pacman -> [Picture] -> Maze -> GameState
 initialState pm p m = GameState Running 0 pm m p
