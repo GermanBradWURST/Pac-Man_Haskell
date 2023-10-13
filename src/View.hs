@@ -18,8 +18,22 @@ viewPure gstate = case viewState gstate of
           pictures [scaledmap, pman]
   _ -> color green (text "test")
 
+{-
+gtrans :: Picture -> Ghost -> Picture
+gtrans pict (G (xs, ys) direc mode) = translate (x*16-216) (240-(y*16)) d
+        where
+                pos = (xs,ys)
+                x = (fromIntegral . fst) pos
+                y = (fromIntegral . snd) pos
+                dp = direc
+                d | dp == GoUp = Rotate (-90) pict
+                  | dp == GoRight = pict
+                  | dp == GoLeft = Rotate 180 pict
+                  | dp == GoDown = Rotate 90 pict
+                  | otherwise = pict -}
+
 ptrans :: Picture -> Pacman -> Picture
-ptrans pict (P (xs, ys) direc) = translate ((448/26)*x-224) ((496/31)*y-248) d
+ptrans pict (P (xs, ys) direc) = translate (x*16-216) (240-(y*16)) d
         where
                 pos = (xs,ys)
                 x = (fromIntegral . fst) pos

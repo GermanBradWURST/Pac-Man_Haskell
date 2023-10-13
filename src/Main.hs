@@ -26,7 +26,7 @@ main = do
     pelletbmp <- loadBMP "src/images/dot.bmp"
     pacmanbmp <- loadBMP "src/images/pacman1.bmp"
     let listp = [bgbmp, pelletbmp, pacmanbmp]
-    let pm = P (23, 14) Player.GoLeft
+    let pm = P (13, 23) Player.GoLeft
 
     playIO (InWindow "Counter" (448, 496) (0, 0)) -- Or FullScreen
               white            -- Background color
