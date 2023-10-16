@@ -16,8 +16,7 @@ executable gloss-counter
   other-modules:       Controller
                      , Model
                      , View
-                     , Ghost
-                     , Player
-                     , LoadLevel
-                     , LoadImages
+                     , Loadlevel
+                     , Ghosts
+                     , PacMan
   default-language:    Haskell2010
