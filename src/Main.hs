@@ -3,35 +3,48 @@ module Main where
 import Controller
 import Model
 import View
-import Ghost
-import LoadLevel
-import LoadImages
-import Player
+import Loadlevel
+import Ghosts
+import PacMan
 
 import Graphics.Gloss.Interface.IO.Game
-    ( black, Display(InWindow), playIO )
+    ( black, Display(InWindow), playIO)
+
 import Graphics.Gloss
 
 main :: IO ()
 main = do
 
-    file <- readFile "src/Level1.txt"
+    levelfile <- readFile "src/Level1.txt"
+    let level = lines levelfile
+    let maze = makeMaze level
 
+    bgbmp <- loadBMP "src/sprites/back_g_e.bmp"
+    pelletbmp <- loadBMP "src/sprites/dot.bmp"
+    pacmanbmp <- loadBMP "src/sprites/pacman1.bmp"
+    powerupbmp <- loadBMP "src/sprites/powerup1.bmp"
+    g1rbmp <- loadBMP "src/sprites/ghost_1_right_1.bmp"
+
+    let picturelist = [bgbmp, pelletbmp, powerupbmp, pacmanbmp, g1rbmp]
     
+    let pacman = PacMan (13, 23) GoLeft
+    let blinky = Ghost Blinky Chase (13, 14) GoRight
+    {-
+    let inky = G Inky (13, 14) GoRight
+    let clyde = G Clyde (13, 14) GoRight
+    let pinky = G Pinky (13, 14) GoRight
+    -}
 
-    let _lines = lines file
-    let maze = makeMaze _lines
+    let ghosts = [blinky {-, inky, pinky, clyde-}]
 
-    bgbmp <- loadBMP "src/images/back_g_e.bmp"
-    pelletbmp <- loadBMP "src/images/dot.bmp"
-    pacmanbmp <- loadBMP "src/images/pacman1.bmp"
-    let listp = [bgbmp, pelletbmp, pacmanbmp]
-    let pm = P (13, 23) Player.GoLeft
+    playIO (InWindow "PacMan" (448, 496) (0, 0))
+             white
+             10
+             (initialState pacman ghosts picturelist maze)
+             view
+             input
+             step
 
-    playIO (InWindow "Counter" (448, 496) (0, 0)) -- Or FullScreen
-              white            -- Background color
-              60               -- Frames per second
-              (initialState pm listp maze)     -- Initial state
-              view             -- View function
-              input            -- Event function
-              step             -- Step function
+
+
+
