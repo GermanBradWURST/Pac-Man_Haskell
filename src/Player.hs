@@ -47,4 +47,10 @@ canMove (P (x,y) pacdirec) maze = (snd nextTile) /= Wall && (snd nextTile) /= Ba
                     |pacdirec == GoRight = currentRow !! (x + 1)
                     |pacdirec == GoLeft = currentRow !! (x - 1) 
 
+keyToDirection :: Char -> Direction
+keyToDirection c    | c == 'w' = GoUp
+                    | c == 's' = GoDown
+                    | c == 'a' = GoLeft
+                    | c == 'd' = GoRight
+
 

@@ -16,4 +16,7 @@ data GameState = GameState {
                  }
 
 initialState :: Pacman -> [Picture] -> Maze -> GameState
-initialState pm p m = GameState Running 0 pm m p
+initialState pm p m = GameState Running 0 initialPacman m p
+
+initialPacman :: Pacman
+initialPacman = P (15,15) GoRight
