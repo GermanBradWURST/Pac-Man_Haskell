@@ -37,10 +37,12 @@ main = do
 
     let ghosts = [blinky {-, inky, pinky, clyde-}]
 
+    let initialstate = (Model.initialState pacman picturelist maze ghosts)
+
     playIO (InWindow "PacMan" (448, 496) (0, 0))
              white
-             10
-             (initialState pacman picturelist maze ghosts)
+             1
+             initialstate
              view
              input
              step
