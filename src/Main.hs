@@ -40,7 +40,7 @@ main = do
     playIO (InWindow "PacMan" (448, 496) (0, 0))
              white
              10
-             (initialState pacman ghosts picturelist maze)
+             (initialState pacman picturelist maze)
              view
              input
              step
