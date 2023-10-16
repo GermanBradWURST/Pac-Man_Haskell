@@ -17,10 +17,8 @@ data GameState = GameState {
     , images :: [Picture]
 }
 
-initialState :: PacMan -> [Picture] -> Maze -> GameState
-initialState pm p m = GameState { viewState = Running, elapsedTime = 0 , pacman = initialPacman, ghosts = [blinky], maze = m , images = p } 
-    where
-       blinky = Ghost { ghosttype = Blinky, mode = Scatter, Ghosts.point = (10,10), Ghosts.direction = Loadlevel.GoLeft }
+initialState :: PacMan -> [Picture] -> Maze -> [Ghost] -> GameState
+initialState pacm p m g = GameState { viewState = Running, elapsedTime = 0 , pacman = initialPacman, ghosts = g, maze = m , images = p } 
 
 initialPacman :: PacMan
 initialPacman = PacMan { PacMan.point = (15,15), PacMan.direction = Loadlevel.GoRight }
