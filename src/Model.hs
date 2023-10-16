@@ -21,4 +21,4 @@ initialState :: PacMan -> [Picture] -> Maze -> [Ghost] -> GameState
 initialState pacm p m g = GameState { viewState = Running, elapsedTime = 0 , pacman = initialPacman, ghosts = g, maze = m , images = p } 
 
 initialPacman :: PacMan
-initialPacman = PacMan { PacMan.point = (15,15), PacMan.direction = Loadlevel.GoRight }
+initialPacman = PacMan { PacMan.point = (15,17), PacMan.direction = Loadlevel.GoRight }

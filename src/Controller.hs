@@ -19,7 +19,7 @@ step secs gstate
 
 -- | Handle user input
 input :: Event -> GameState -> IO GameState
-input e gstate = return (inputKey e Model.initialPacman gstate )
+input e gstate = return (inputKey e (pacman gstate) gstate )
 
 
 {-
@@ -29,10 +29,10 @@ input e gstate = return (inputKey e gstate)
 
 inputKey :: Event -> PacMan -> GameState -> GameState
 inputKey (EventKey (Char c) _ _ _) (PacMan (x,y) d) gstate  -- If the user presses a character key, show that one
-    |c == 's' = gstate {pacman = (movePacMan (PacMan (x,y) Loadlevel.GoDown))}
-    |c == 'w' = gstate {pacman = (movePacMan (PacMan (x,y) Loadlevel.GoUp))} 
-    |c == 'a' = gstate {pacman = (movePacMan (PacMan (x,y) Loadlevel.GoLeft))}
-    |c == 'd' = gstate {pacman = (movePacMan (PacMan (x,y) Loadlevel.GoRight))}
+    |c == 's' = gstate {pacman = (movePacMan (PacMan (x,y) Loadlevel.GoDown) gstate)}
+    |c == 'w' = gstate {pacman = (movePacMan (PacMan (x,y) Loadlevel.GoUp) gstate)} 
+    |c == 'a' = gstate {pacman = (movePacMan (PacMan (x,y) Loadlevel.GoLeft) gstate)}
+    |c == 'd' = gstate {pacman = (movePacMan (PacMan (x,y) Loadlevel.GoRight) gstate)}
 inputKey _ _ gstate = gstate -- Otherwise keep the same
 
 
@@ -66,16 +66,18 @@ validMove (PacMan (x,y) pacdirec) direc maze = (snd nextTile) /= Wall || (snd ne
                     |direc == GoLeft = currentRow !! (x - 1)                        
 
 --allowing pacman to move, which as of now is just teleporting 1 block
-movePacMan :: PacMan -> PacMan
-movePacMan (PacMan (x,y) pacdirec) 
-    |pacdirec == GoUp = (PacMan (x,y-1) pacdirec)
-    |pacdirec == GoDown = (PacMan (x, y+1) pacdirec)
-    |pacdirec == GoRight = (PacMan (x + 1,y) pacdirec)
-    |pacdirec == GoLeft = (PacMan (x - 1, y) pacdirec)
+movePacMan :: PacMan -> GameState -> PacMan
+movePacMan p@(PacMan (x,y) pacdirec) gstate 
+    |(pacdirec == GoUp) && canMove p (maze gstate) = (PacMan (x,y-1) pacdirec)
+    |pacdirec == GoDown && canMove p (maze gstate) = (PacMan (x, y+1) pacdirec)
+    |pacdirec == GoRight && canMove p (maze gstate) = (PacMan (x + 1,y) pacdirec)
+    |pacdirec == GoLeft && canMove p (maze gstate) = (PacMan (x - 1, y) pacdirec)
+    |otherwise = p
+            
 
-
+-- checking if pacman is able to move or if this moves him into a wall
 canMove :: PacMan -> Maze -> Bool
-canMove (PacMan (x,y) pacdirec) maze = (snd nextTile) /= Wall && (snd nextTile) /= Barrier
+canMove (PacMan (x,y) pacdirec) maze = (snd nextTile) /= Wall && (snd nextTile) /= Barrier 
     where
         currentRow = maze !! y
         rowUp = maze !! (y-1)
