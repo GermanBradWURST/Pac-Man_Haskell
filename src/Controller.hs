@@ -15,12 +15,25 @@ import Control.Concurrent (dupChan)
 step :: Float -> GameState -> IO GameState
 step secs gstate
   = do
-    let pman = stepPacMan gstate
-    return $ gstate { elapsedTime = elapsedTime gstate + secs, pacman = pman }
+    let pman = stepPacMan gstate  -- taking the current pacman
+    let pelletmaze = [[eatPellet tile pman | tile <- row] | row <- maze gstate] -- checking if the current pacman is eating a pellet
+    let newmaze = [[eatSuperPellet tile pman | tile <- row] | row <- pelletmaze] -- checking if the current pacman is eating a super pellet
+    return $ gstate { elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze } -- returning the new (maybe change) gamestate
 
+
+-- makes pacman move 
 stepPacMan :: GameState -> PacMan
 stepPacMan gstate | canMove (pacman gstate) (maze gstate) = movePacMan (pacman gstate) gstate 
                   | otherwise = pacman gstate
+
+-- handles pacman eating pellets (and keeping score)
+eatPellet :: Tile -> PacMan -> Tile
+eatPellet tile (PacMan (x,y) d) = if ((fst tile) == (x,y)) && (snd tile) == Pellet then ((fst tile), Empty) else tile
+
+-- handles pacman eating super pellets
+eatSuperPellet :: Tile -> PacMan -> Tile
+eatSuperPellet tile (PacMan (x,y) d) = if ((fst tile) == (x,y)) && (snd tile) == SuperPellet then ((fst tile), Empty) else tile
+
 
 --wrapAround :: PacMan -> PacMan
 
@@ -80,3 +93,5 @@ canMove (PacMan (x,y) pacdirec) maze = (snd nextTile) /= Wall && (snd nextTile) 
                     |pacdirec == GoDown = rowDown !! x
                     |pacdirec == GoRight = currentRow !! (x + 1)
                     |pacdirec == GoLeft = currentRow !! (x - 1) 
+
+

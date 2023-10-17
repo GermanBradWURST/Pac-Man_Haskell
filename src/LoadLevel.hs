@@ -3,7 +3,9 @@ module Loadlevel where
 data Direction = GoLeft | GoRight | GoUp | GoDown deriving (Show, Eq)
 
 type Point = (Int, Int)
+
 type Tile = (Point, Tiletype)
+
 data Tiletype = Empty | Pellet | Wall | SuperPellet | Barrier deriving (Show, Eq)
 
 type Maze = [[Tile]]
