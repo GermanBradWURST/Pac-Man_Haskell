@@ -26,9 +26,7 @@ main = do
     g1rbmp <- loadBMP "src/sprites/ghost_1_right_1.bmp"
 
     let picturelist = [bgbmp, pelletbmp, powerupbmp, pacmanbmp, g1rbmp]
-    
-    let pacman = PacMan (13, 23) GoLeft
-    let blinky = Ghost Blinky Chase (13, 14) GoRight
+    let blinky = Ghost Blinky Chase (13, 11) GoRight
     {-
     let inky = G Inky (13, 14) GoRight
     let clyde = G Clyde (13, 14) GoRight
@@ -37,7 +35,7 @@ main = do
 
     let ghosts = [blinky {-, inky, pinky, clyde-}]
 
-    let initialstate = (Model.initialState pacman picturelist maze ghosts)
+    let initialstate = Model.initialState initialPacMan picturelist maze ghosts
 
     playIO (InWindow "PacMan" (448, 496) (0, 0))
              white

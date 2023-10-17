@@ -15,33 +15,27 @@ import Control.Concurrent (dupChan)
 step :: Float -> GameState -> IO GameState
 step secs gstate
   = do
-    return $ gstate { elapsedTime = elapsedTime gstate + secs }
+    let pman = stepPacMan gstate
+    return $ gstate { elapsedTime = elapsedTime gstate + secs, pacman = pman }
+
+stepPacMan :: GameState -> PacMan
+stepPacMan gstate | canMove (pacman gstate) (maze gstate) = movePacMan (pacman gstate) gstate 
+                  | otherwise = pacman gstate
+
+--wrapAround :: PacMan -> PacMan
 
 -- | Handle user input
 input :: Event -> GameState -> IO GameState
-input e gstate = return (inputKey e (pacman gstate) gstate )
+input e gstate = return (inputKey e (pacman gstate) gstate)
 
-
-{-
-input :: Event -> GameState -> IO GameState
-input e gstate = return (inputKey e gstate)
--}
 
 inputKey :: Event -> PacMan -> GameState -> GameState
 inputKey (EventKey (Char c) _ _ _) (PacMan (x,y) d) gstate  -- If the user presses a character key, show that one
-    |c == 's' = gstate {pacman = (movePacMan (PacMan (x,y) Loadlevel.GoDown) gstate)}
-    |c == 'w' = gstate {pacman = (movePacMan (PacMan (x,y) Loadlevel.GoUp) gstate)} 
-    |c == 'a' = gstate {pacman = (movePacMan (PacMan (x,y) Loadlevel.GoLeft) gstate)}
-    |c == 'd' = gstate {pacman = (movePacMan (PacMan (x,y) Loadlevel.GoRight) gstate)}
+    |c == 's' = gstate {pacman = changeDirection (pacman gstate) GoDown (maze gstate)}
+    |c == 'w' = gstate {pacman = changeDirection (pacman gstate) GoUp (maze gstate)} 
+    |c == 'a' = gstate {pacman = changeDirection (pacman gstate) GoLeft (maze gstate)}
+    |c == 'd' = gstate {pacman = changeDirection (pacman gstate) GoRight (maze gstate)}
 inputKey _ _ gstate = gstate -- Otherwise keep the same
-
-
-inputToDirection :: Event -> Direction
-inputToDirection (EventKey (Char c) _ _ _) 
-    |c == 'w' = Loadlevel.GoUp
-    |c == 's' = Loadlevel.GoDown
-    |c == 'a' = Loadlevel.GoLeft
-    |c == 'd' = Loadlevel.GoRight
 
 
 --handling direction changes, pacman can't move in a certain direction if that would lead him 
@@ -55,7 +49,7 @@ changeDirection (PacMan (x,y) pacdirec) direc maze
 
 --helper function to check validity of a move
 validMove :: PacMan -> Direction -> Maze -> Bool
-validMove (PacMan (x,y) pacdirec) direc maze = (snd nextTile) /= Wall || (snd nextTile) /= Barrier
+validMove (PacMan (x,y) pacdirec) direc maze = (snd nextTile) /= Wall && (snd nextTile) /= Barrier
     where
         currentRow = maze !! y
         rowUp = maze !! (y-1)
