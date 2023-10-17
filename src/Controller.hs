@@ -160,7 +160,8 @@ stepBlinky gstate g | mode g == Chase = (x,y)
 
 
 stepInky :: GameState -> Ghost -> Loadlevel.Point
-stepInky = undefined -- bottom right
+stepInky gstate g | mode g == Chase = undefined -- bottom right
+                  | mode g == Scatter = (26, 30)
 
 stepPinky :: GameState -> Ghost -> Loadlevel.Point
 stepPinky = undefined -- top left   
