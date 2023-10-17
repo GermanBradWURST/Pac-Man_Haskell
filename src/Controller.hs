@@ -21,6 +21,12 @@ checkWrap p d  | p == (0, 14) && d == GoLeft = True
                | p == (27, 14) && d == GoRight = True
                | otherwise = False
 
+generateRandomNum :: (Int, Int) -> Int
+generateRandomNum (minn, maxx) = fst $ randomR (minn, maxx) iRNG
+
+iRNG :: StdGen
+iRNG = mkStdGen 2231542
+
 -- | Handle one iteration of the game
 step :: Float -> GameState -> IO GameState
 step secs gstate
@@ -153,21 +159,60 @@ checkDirectionRightLeft m p | t1 /= Barrier && t1 /= Wall = True
 -- chooses target tile
 stepBlinky :: GameState -> Ghost -> Loadlevel.Point
 stepBlinky gstate g | mode g == Chase = (x,y)
-                    | mode g == Scatter = (26, 0) -- top right
-                    | otherwise = (x,y) -- moet nog veranderd worden
+                    | mode g == Scatter = (26, 0) 
+                    | otherwise = (xx, yy)
                     where (x,y) = point (pacman gstate)
+                          (a, b) = gpoint g
+                          xx = generateRandomNum (a - 10, a + 10)
+                          yy = generateRandomNum (b - 10, b + 10)
+
 
 
 
 stepInky :: GameState -> Ghost -> Loadlevel.Point
-stepInky gstate g | mode g == Chase = undefined -- bottom right
+stepInky gstate g | mode g == Chase = (ga, gb)
                   | mode g == Scatter = (26, 30)
+                  | otherwise = (xx, yy)
+         where (x,y) = point (pacman gstate)
+               (gx, gy) = gpoint ((ghosts gstate)!!0)
+               dir = direction (pacman gstate)
+               (a,b) | dir == GoUp = (x - 2, y - 2)
+                     | dir == GoDown = (x, y + 2)
+                     | dir == GoLeft = (x - 2, y)
+                     | dir == GoRight = (x + 2, y)
+               (ga, gb) = (a + (a - gx), b + (b - gy))
+               xx = generateRandomNum (a - 10, a + 10)
+               yy = generateRandomNum (b - 10, b + 10)
+               
+                        
 
 stepPinky :: GameState -> Ghost -> Loadlevel.Point
-stepPinky = undefined -- top left   
+stepPinky gstate g | mode g == Chase = (a, b)
+                   | mode g == Scatter = (1, 0)
+                   | otherwise = (xx, yy)
+         where (x,y) = point (pacman gstate)
+               dir = direction (pacman gstate)
+               (a,b) | dir == GoUp = (x - 4, y - 4)
+                     | dir == GoDown = (x, y + 4)
+                     | dir == GoLeft = (x - 4, y)
+                     | dir == GoRight = (x + 4, y)
+               xx = generateRandomNum (a - 10, a + 10)
+               yy = generateRandomNum (b - 10, b + 10)
+
 
 stepClyde :: GameState -> Ghost -> Loadlevel.Point
-stepClyde = undefined -- bottom left
+stepClyde gstate g | mode g == Chase = (gx, gy)
+                   | mode g == Scatter = (1, 30)
+                   | otherwise = (xx, yy)
+         where (x,y) = point (pacman gstate)
+               (a, b) = gpoint g
+               dis = calcDist ((x,y), (a,b), GoRight)
+               (gx, gy) | dis > 8 = (x, y)
+                        | otherwise = (1, 30)
+               xx = generateRandomNum (a - 10, a + 10)
+               yy = generateRandomNum (b - 10, b + 10)
+
+               
 
 
 -- determines which turn to make

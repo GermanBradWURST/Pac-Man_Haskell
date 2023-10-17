@@ -14,5 +14,5 @@ data Ghost = Ghost {
 }
 
 wrapAroundGhost :: Ghost -> Ghost
-wrapAroundGhost g | (gdirection g) == GoRight = g {gpoint = (0, 14)}
-                  | (gdirection g) == GoLeft = g {gpoint = (27, 14)}
+wrapAroundGhost g | gdirection g == GoRight = g {gpoint = (0, 14)}
+                  | gdirection g == GoLeft = g {gpoint = (27, 14)}
