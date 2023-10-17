@@ -27,12 +27,25 @@ step secs gstate
   = do
     let pman = stepPacMan gstate
     let glist = map (stepGhost gstate) (ghosts gstate)
-    return $ gstate { elapsedTime = elapsedTime gstate + secs, pacman = pman, ghosts = glist}
+    let pelletmaze = [[eatPellet tile pman | tile <- row] | row <- maze gstate] -- checking if the current pacman is eating a pellet
+    let newmaze = [[eatSuperPellet tile pman | tile <- row] | row <- pelletmaze] -- checking if the current pacman is eating a super pellet
+        
+    return $ gstate { elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = glist }
 
 stepPacMan :: GameState -> PacMan
 stepPacMan gstate | checkWrap (point (pacman gstate)) (direction (pacman gstate)) = wrapAroundPacMan (pacman gstate)
                   | canMove (pacman gstate) (maze gstate) = movePacMan (pacman gstate) gstate
                   | otherwise = pacman gstate
+
+--wrapAround :: PacMan -> PacMan
+
+-- handles pacman eating pellets (and keeping score)
+eatPellet :: Tile -> PacMan -> Tile
+eatPellet tile (PacMan (x,y) d) = if ((fst tile) == (x,y)) && (snd tile) == Pellet then ((fst tile), Empty) else tile
+
+-- handles pacman eating super pellets
+eatSuperPellet :: Tile -> PacMan -> Tile
+eatSuperPellet tile (PacMan (x,y) d) = if ((fst tile) == (x,y)) && (snd tile) == SuperPellet then ((fst tile), Empty) else tile
 
 
 -- | Handle user input
@@ -90,11 +103,7 @@ canMove (PacMan (x,y) pacdirec) maze = (snd nextTile) /= Wall && (snd nextTile) 
         nextTile    |pacdirec == GoUp = rowUp !! x
                     |pacdirec == GoDown = rowDown !! x
                     |pacdirec == GoRight = currentRow !! (x + 1)
-                    |pacdirec == GoLeft = currentRow !! (x - 1)
-
-
-
-
+                    |pacdirec == GoLeft = currentRow !! (x - 1) 
 
 ---Ghost step calcs
 
@@ -139,7 +148,7 @@ checkDirectionRightLeft m p | t1 /= Barrier && t1 /= Wall = True
                             | t2 /= Barrier && t2 /= Wall = True
                             | otherwise = False
                            where ((a, b), t1) = searchMaze m (fst p + 1, snd p)
-                                 ((c, d), t2) = searchMaze m (fst p + 1, snd p)
+                                 ((c, d), t2) = searchMaze m (fst p - 1, snd p)
 
 -- chooses target tile
 stepBlinky :: GameState -> Ghost -> Loadlevel.Point
@@ -166,7 +175,7 @@ choosePath gstate g (x,y) = g {gdirection = direct}
               where list | gdirection g == GoUp = filter (filtWall (maze gstate)) [((a, b+1), (x,y), GoUp), ((a+1, b),(x,y), GoRight), ((a-1, b),(x,y), GoLeft)]
                          | gdirection g == GoDown = filter (filtWall (maze gstate)) [((a, b-1), (x,y), GoDown), ((a+1, b),(x,y), GoRight), ((a-1, b),(x,y), GoLeft)]
                          | gdirection g == GoLeft = filter (filtWall (maze gstate)) [((a, b+1), (x,y), GoUp), ((a, b-1),(x,y), GoDown), ((a-1, b),(x,y), GoLeft)]
-                         | otherwise = filter (filtWall (maze gstate)) [((a, b+1), (x,y), GoUp), ((a, b-1), (x,y), GoDown), ((a+1, b), (x,y), GoRight)]
+                         | gdirection g == GoRight = filter (filtWall (maze gstate)) [((a, b+1), (x,y), GoUp), ((a, b-1), (x,y), GoDown), ((a+1, b), (x,y), GoRight)]
                     listfilt = map  calcDist list
                     min = minimum listfilt
                     ind = findIndex listfilt min
@@ -189,7 +198,6 @@ calcDist ((x1 , y1), (x2 , y2), d) = sqrt (x'*x' + y'*y')
 
 -- filters directions a ghost cant go in
 filtWall :: Maze -> (Loadlevel.Point, Loadlevel.Point, Loadlevel.Direction) -> Bool
-filtWall m ((a,b), (c,d), e) | t == Wall || t == Barrier = False
-                          | otherwise = True
+filtWall m ((a,b), (c,d), e) | t /= Wall && t /= Barrier = True
+                             | otherwise = False
                    where ((x,y), t) = searchMaze m (a,b)
-
