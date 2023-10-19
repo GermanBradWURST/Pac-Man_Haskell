@@ -26,7 +26,7 @@ main = do
     g1rbmp <- loadBMP "src/sprites/ghost_1_right_1.bmp"
 
     let picturelist = [bgbmp, pelletbmp, powerupbmp, pacmanbmp, g1rbmp]
-    let blinky = Ghost Blinky Scatter (13, 11) GoRight
+    let blinky = Ghost Blinky Chase (13, 11) GoRight
     let inky = Ghost Inky Chase (13, 11) GoRight-- 13, 14
     let clyde = Ghost Clyde Scatter (13, 11) GoRight-- 14, 14
     let pinky = Ghost Pinky Scatter (13, 11) GoRight-- 13, 13
