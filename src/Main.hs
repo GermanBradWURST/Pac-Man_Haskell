@@ -39,7 +39,7 @@ main = do
 
 
     let picturelist = [bgbmp, pelletbmp, powerupbmp, pacmanbmp, g1rbmp, scorebmp,nmr0bmp, nmr1bmp, nmr2bmp, nmr3bmp, nmr4bmp ,nmr5bmp, nmr6bmp, nmr7bmp, nmr8bmp, nmr9bmp]
-    let blinky = Ghost Blinky Scatter (13, 11) GoRight
+    let blinky = Ghost Blinky Chase (13, 11) GoRight
     let inky = Ghost Inky Chase (13, 11) GoRight-- 13, 14
     let clyde = Ghost Clyde Scatter (13, 11) GoRight-- 14, 14
     let pinky = Ghost Pinky Scatter (13, 11) GoRight-- 13, 13
