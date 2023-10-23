@@ -35,8 +35,10 @@ step secs gstate
     let glist = map (stepGhost gstate) (ghosts gstate)
     let pelletmaze = [[eatPellet tile pman | tile <- row] | row <- maze gstate] -- checking if the current pacman is eating a pellet
     let newmaze = [[eatSuperPellet tile pman | tile <- row] | row <- pelletmaze] -- checking if the current pacman is eating a super pellet
+    let newScore = 10 * (240 - score (calculateScore (concat(maze gstate)) gstate))
+    -- putStrLn(show newScore)
         
-    return $ gstate { elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = glist }
+    return $ gstate { elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = glist, score = newScore}
 
 stepPacMan :: GameState -> PacMan
 stepPacMan gstate | checkWrap (point (pacman gstate)) (direction (pacman gstate)) = wrapAroundPacMan (pacman gstate)
@@ -49,9 +51,18 @@ stepPacMan gstate | checkWrap (point (pacman gstate)) (direction (pacman gstate)
 eatPellet :: Tile -> PacMan -> Tile
 eatPellet tile (PacMan (x,y) d) = if ((fst tile) == (x,y)) && (snd tile) == Pellet then ((fst tile), Empty) else tile
 
+        
+
 -- handles pacman eating super pellets
 eatSuperPellet :: Tile -> PacMan -> Tile
 eatSuperPellet tile (PacMan (x,y) d) = if ((fst tile) == (x,y)) && (snd tile) == SuperPellet then ((fst tile), Empty) else tile
+
+calculateScore :: [Tile] -> GameState -> GameState
+calculateScore tiles gstate = gstate{ score = length (pelletList tiles)}
+    where 
+        pelletList :: [Tile] -> [Tile]
+        pelletList = filter (\tile -> snd tile == Pellet)
+
 
 
 -- | Handle user input
@@ -249,5 +260,3 @@ filtWall m ((a,b), (c,d), e) | t /= Wall && t /= Barrier = True
                    where ((x,y), t) = searchMaze m (a,b)
 
 
-keepScore :: [Tile] -> [Tile] -> Int
-keepScore inmaze mazenow = 
