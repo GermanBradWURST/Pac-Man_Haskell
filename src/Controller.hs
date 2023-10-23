@@ -247,3 +247,7 @@ filtWall :: Maze -> (Loadlevel.Point, Loadlevel.Point, Loadlevel.Direction) -> B
 filtWall m ((a,b), (c,d), e) | t /= Wall && t /= Barrier = True
                              | otherwise = False
                    where ((x,y), t) = searchMaze m (a,b)
+
+
+keepScore :: [Tile] -> [Tile] -> Int
+keepScore inmaze mazenow = 
