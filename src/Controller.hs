@@ -38,6 +38,7 @@ step secs gstate
     let newScore = 10  * (260 - (calculateScore (concat(maze gstate))))
     let ghostsMode = changeGhostMode (scoreChange (score gstate) newScore) (glist)
     putStrLn (show (mode (ghostsMode!!0)))
+    putStrLn (show (gTimer (ghostsMode!!0)))
         
     return $ gstate { elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = ghostsMode, score = newScore}
 
@@ -65,14 +66,14 @@ calculateScore tiles  = (length (pelletList tiles))  + (5 * (length (superPellet
         superPelletList :: [Tile] -> [Tile] 
         superPelletList = filter (\tile -> snd tile == SuperPellet) 
 
-
+-- if the score changes with more than 10 points in a single step it means a power pellet has been eaten
 scoreChange :: Int -> Int -> Bool
 scoreChange oldscore newscore = abs (oldscore - newscore) > 10 
 
 changeGhostMode :: Bool -> [Ghost] -> [Ghost]
 changeGhostMode pred ghosts
     | pred = map toFrightened ghosts  
-    | ((gTimer fstGhost) `mod` 15 == 0) && ((mode fstGhost) == Frightened) = map toScatter ghosts
+    | ((gTimer fstGhost) `mod` 10 == 0) && ((mode fstGhost) == Frightened) = map toScatter ghosts
     | otherwise = ghosts
     where
         fstGhost = ghosts!!0
@@ -83,11 +84,11 @@ toFrightened g = g { mode = Frightened }
 
 -- change the mode of the ghosts to scatter
 toScatter :: Ghost -> Ghost
-toScatter g = g {mode = Scatter, gTimer = 0}
+toScatter g = g {mode = Scatter, gTimer = 1}
 
 -- change the mode of the ghosts to chase
 toChase :: Ghost -> Ghost
-toChase g = g {mode = Chase, gTimer = 0 }
+toChase g = g {mode = Chase, gTimer = 1 }
 
 
 -- | Handle user input
@@ -150,11 +151,20 @@ canMove (PacMan (x,y) pacdirec) maze = (snd nextTile) /= Wall && (snd nextTile) 
 ---Ghost step calcs
 
 stepGhost :: GameState -> Ghost -> Ghost
-stepGhost gstate g | canChangeDirection gstate g = (ghostMoveOne (chooseGhost gstate g)) {gTimer = newTimer}
+stepGhost gstate g | canChangeDirection gstate g = (ghostMoveOne (chooseGhost gstate g)) {gTimer = incrementTimer g}
                    | checkWrap (gpoint g) (gdirection g) = wrapAroundGhost g
                    | otherwise = ghostMoveOne g
-                        where
-                            newTimer = (gTimer g) + 1
+                        -- where
+                           --  newTimer = (gTimer g) + 1
+
+
+-- icrementing the fright counter 
+incrementTimer :: Ghost -> Int
+incrementTimer ghost 
+    | (mode ghost)== Frightened = newTimer
+    | otherwise = gTimer ghost
+        where
+            newTimer = (gTimer ghost) + 1
 
 
 --Moves the ghost one forward when it cant turn

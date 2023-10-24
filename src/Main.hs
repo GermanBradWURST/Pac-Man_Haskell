@@ -19,6 +19,29 @@ main = do
     let level = lines levelfile
     let maze = makeMaze level
 
+    images <- loadImages
+
+    let blinky = Ghost Blinky Chase (13, 11) GoRight 1
+    let inky = Ghost Inky Chase (13, 11) GoRight 1 -- 13, 14
+    let clyde = Ghost Clyde Chase (13, 11) GoRight 1 -- 14, 14
+    let pinky = Ghost Pinky Chase (13, 11) GoRight 1 -- 13, 13
+    
+    let ghosts = [blinky, inky, pinky, clyde]
+
+    let initialstate = Model.initialState initialPacMan images maze ghosts
+
+    playIO (InWindow "PacMan" (448, 580) (0, 0))
+             black
+             7
+             initialstate
+             view
+             input
+             step
+
+
+-- Load BMP images
+loadImages :: IO [Picture]
+loadImages = do
     bgbmp <- loadBMP "src/sprites/back_g_e.bmp"
     pelletbmp <- loadBMP "src/sprites/dot.bmp"
     pacmanbmp <- loadBMP "src/sprites/pacman1.bmp"
@@ -27,6 +50,7 @@ main = do
     inkybmp <- loadBMP "src/sprites/Inky.bmp"
     clydebmp <- loadBMP "src/sprites/Clyde.bmp"
     pinkybmp <- loadBMP "src/sprites/Pinky.bmp"
+    frightghost <- loadBMP "src/sprites/frightGhost.bmp"
 
     scorebmp <- loadBMP "src/sprites/SCORE.bmp"
     nmr1bmp <- loadBMP "src/sprites/nmr1.bmp"
@@ -40,25 +64,4 @@ main = do
     nmr9bmp <- loadBMP "src/sprites/nmr9.bmp"
     nmr0bmp <- loadBMP "src/sprites/nmr0.bmp"
 
-
-    let picturelist = [bgbmp, pelletbmp, powerupbmp, pacmanbmp, blinkybmp, inkybmp, clydebmp, pinkybmp, scorebmp,nmr0bmp, nmr1bmp, nmr2bmp, nmr3bmp, nmr4bmp ,nmr5bmp, nmr6bmp, nmr7bmp, nmr8bmp, nmr9bmp]
-    let blinky = Ghost Blinky Chase (13, 11) GoRight 0
-    let inky = Ghost Inky Chase (13, 11) GoRight 0 -- 13, 14
-    let clyde = Ghost Clyde Chase (13, 11) GoRight 0 -- 14, 14
-    let pinky = Ghost Pinky Chase (13, 11) GoRight 0 -- 13, 13
-    
-    let ghosts = [blinky, inky, pinky, clyde]
-
-    let initialstate = Model.initialState initialPacMan picturelist maze ghosts
-
-    playIO (InWindow "PacMan" (448, 580) (0, 0))
-             black
-             7
-             initialstate
-             view
-             input
-             step
-
-
-
-
+    return [bgbmp, pelletbmp, powerupbmp, pacmanbmp, blinkybmp, inkybmp, clydebmp, pinkybmp, scorebmp, nmr0bmp, nmr1bmp, nmr2bmp, nmr3bmp, nmr4bmp, nmr5bmp, nmr6bmp, nmr7bmp, nmr8bmp, nmr9bmp, frightghost]
