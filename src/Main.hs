@@ -23,13 +23,17 @@ main = do
     pelletbmp <- loadBMP "src/sprites/dot.bmp"
     pacmanbmp <- loadBMP "src/sprites/pacman1.bmp"
     powerupbmp <- loadBMP "src/sprites/powerup1.bmp"
-    g1rbmp <- loadBMP "src/sprites/ghost_1_right_1.bmp"
+    blinkybmp <- loadBMP "src/sprites/Blinky.bmp"
+    inkybmp <- loadBMP "src/sprites/Inky.bmp"
+    clydebmp <- loadBMP "src/sprites/Clyde.bmp"
+    pinkybmp <- loadBMP "src/sprites/Pinky.bmp"
 
-    let picturelist = [bgbmp, pelletbmp, powerupbmp, pacmanbmp, g1rbmp]
-    let blinky = Ghost Blinky Scatter (13, 11) GoRight
+
+    let picturelist = [bgbmp, pelletbmp, powerupbmp, pacmanbmp, blinkybmp, inkybmp, clydebmp, pinkybmp]
+    let blinky = Ghost Blinky Chase (13, 11) GoRight
     let inky = Ghost Inky Chase (13, 11) GoRight-- 13, 14
-    let clyde = Ghost Clyde Scatter (13, 11) GoRight-- 14, 14
-    let pinky = Ghost Pinky Scatter (13, 11) GoRight-- 13, 13
+    let clyde = Ghost Clyde Chase (13, 11) GoRight-- 14, 14
+    let pinky = Ghost Pinky Chase (13, 11) GoRight-- 13, 13
     
 
     let ghosts = [blinky, inky, pinky, clyde]
