@@ -41,14 +41,12 @@ main = do
     nmr0bmp <- loadBMP "src/sprites/nmr0.bmp"
 
 
-
-    let picturelist = [bgbmp, pelletbmp, powerupbmp, pacmanbmp, g1rbmp, scorebmp,nmr0bmp, nmr1bmp, nmr2bmp, nmr3bmp, nmr4bmp ,nmr5bmp, nmr6bmp, nmr7bmp, nmr8bmp, nmr9bmp]
-    let blinky = Ghost Blinky Chase (13, 11) GoRight
-    let inky = Ghost Inky Chase (13, 11) GoRight-- 13, 14
-    let clyde = Ghost Clyde Chase (13, 11) GoRight-- 14, 14
-    let pinky = Ghost Pinky Chase (13, 11) GoRight-- 13, 13
+    let picturelist = [bgbmp, pelletbmp, powerupbmp, pacmanbmp, blinkybmp, inkybmp, clydebmp, pinkybmp, scorebmp,nmr0bmp, nmr1bmp, nmr2bmp, nmr3bmp, nmr4bmp ,nmr5bmp, nmr6bmp, nmr7bmp, nmr8bmp, nmr9bmp]
+    let blinky = Ghost Blinky Chase (13, 11) GoRight 0
+    let inky = Ghost Inky Chase (13, 11) GoRight 0 -- 13, 14
+    let clyde = Ghost Clyde Chase (13, 11) GoRight 0 -- 14, 14
+    let pinky = Ghost Pinky Chase (13, 11) GoRight 0 -- 13, 13
     
-
     let ghosts = [blinky, inky, pinky, clyde]
 
     let initialstate = Model.initialState initialPacMan picturelist maze ghosts

@@ -15,7 +15,7 @@ viewPure :: GameState -> Picture
 viewPure gstate = case viewState gstate of
     Running -> do
         let scaledlist = map (Scale 2.0 2.0) (images gstate)
-            scoreList = drop 6 (images gstate)
+            scoreList = drop 9 (images gstate)
             pacpic = translatePacMan (scaledlist!!3) (pacman gstate)
             blinky = translateGhost (scaledlist!!4) ((ghosts gstate)!!0)
             inky = translateGhost (scaledlist!!5) ((ghosts gstate)!!1)
@@ -23,7 +23,7 @@ viewPure gstate = case viewState gstate of
             clyde = translateGhost (scaledlist!!6) ((ghosts gstate)!!3)
             pellets = map (translatePellet (scaledlist!!1)) (pelletList (concat (maze gstate)))
             superPellets = map (translatePellet (scaledlist!!2)) (superPelletList (concat (maze gstate)))
-            scoreText = [translateScoreText ((images gstate)!! 5)]
+            scoreText = [translateScoreText ((images gstate)!! 8)]
             score =  [translateScore (scoreList!!(intList!!0)) 10 , translateScore (scoreList!!(intList!!1)) 25 , translateScore (scoreList!!(intList!!2)) 40 , translateScore (scoreList!!(intList!!3)) 55 ]
                 where 
                     intList = calculateScore gstate
@@ -36,7 +36,6 @@ calculateScore gstate = intToList (score gstate)
         intToList :: Int -> [Int]
         intToList 0 = [0,0,0,0]
         intToList n 
-            | n < 10 = [0, 0, 0, n]
             | n < 100 = [0, 0, n `div` 10, n `mod` 10]
             | n < 1000 = [0, n `div` 100, (n `div` 10) `mod` 10,n `mod` 10]
             | otherwise = [n `div` 1000, (n `div` 100) `mod` 10, (n `div` 10) `mod` 10, n `mod` 10]
@@ -81,7 +80,7 @@ translatePacMan pict (PacMan (xs, ys) direc) = translate (x*16-216) (240-(y*16))
 
 
 translateGhost :: Picture -> Ghost -> Picture
-translateGhost pict (Ghost gtype mode (xs, ys) direc) = translate (x*16-216) (240-(y*16)) d
+translateGhost pict (Ghost gtype mode (xs, ys) direc time) = translate (x*16-216) (240-(y*16)) d
             where
                     pos = (xs,ys)
                     x = (fromIntegral . fst) pos

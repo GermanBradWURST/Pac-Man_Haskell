@@ -35,34 +35,59 @@ step secs gstate
     let glist = map (stepGhost gstate) (ghosts gstate)
     let pelletmaze = [[eatPellet tile pman | tile <- row] | row <- maze gstate] -- checking if the current pacman is eating a pellet
     let newmaze = [[eatSuperPellet tile pman | tile <- row] | row <- pelletmaze] -- checking if the current pacman is eating a super pellet
-    let newScore = 10 * (240 - score (calculateScore (concat(maze gstate)) gstate))
-    -- putStrLn(show newScore)
+    let newScore = 10  * (260 - (calculateScore (concat(maze gstate))))
+    let ghostsMode = changeGhostMode (scoreChange (score gstate) newScore) (glist)
+    putStrLn (show (mode (ghostsMode!!0)))
         
-    return $ gstate { elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = glist, score = newScore}
+    return $ gstate { elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = ghostsMode, score = newScore}
 
 stepPacMan :: GameState -> PacMan
 stepPacMan gstate | checkWrap (point (pacman gstate)) (direction (pacman gstate)) = wrapAroundPacMan (pacman gstate)
                   | canMove (pacman gstate) (maze gstate) = movePacMan (pacman gstate) gstate
                   | otherwise = pacman gstate
 
---wrapAround :: PacMan -> PacMan
 
 -- handles pacman eating pellets (and keeping score)
 eatPellet :: Tile -> PacMan -> Tile
-eatPellet tile (PacMan (x,y) d) = if ((fst tile) == (x,y)) && (snd tile) == Pellet then ((fst tile), Empty) else tile
-
-        
+eatPellet tile (PacMan (x,y) d) = if ((fst tile) == (x,y)) && (snd tile) == Pellet then ((fst tile), Empty) else tile    
 
 -- handles pacman eating super pellets
 eatSuperPellet :: Tile -> PacMan -> Tile
 eatSuperPellet tile (PacMan (x,y) d) = if ((fst tile) == (x,y)) && (snd tile) == SuperPellet then ((fst tile), Empty) else tile
 
-calculateScore :: [Tile] -> GameState -> GameState
-calculateScore tiles gstate = gstate{ score = length (pelletList tiles)}
-    where 
+
+-- takes all the tiles and calculates how many of them contain a pellet, or a superpellet
+calculateScore :: [Tile] -> Int
+calculateScore tiles  = (length (pelletList tiles))  + (5 * (length (superPelletList tiles)))
+    where
         pelletList :: [Tile] -> [Tile]
         pelletList = filter (\tile -> snd tile == Pellet)
+        superPelletList :: [Tile] -> [Tile] 
+        superPelletList = filter (\tile -> snd tile == SuperPellet) 
 
+
+scoreChange :: Int -> Int -> Bool
+scoreChange oldscore newscore = abs (oldscore - newscore) > 10 
+
+changeGhostMode :: Bool -> [Ghost] -> [Ghost]
+changeGhostMode pred ghosts
+    | pred = map toFrightened ghosts  
+    | ((gTimer fstGhost) `mod` 15 == 0) && ((mode fstGhost) == Frightened) = map toScatter ghosts
+    | otherwise = ghosts
+    where
+        fstGhost = ghosts!!0
+        
+-- change the mode of the ghosts to frightened
+toFrightened :: Ghost -> Ghost
+toFrightened g = g { mode = Frightened }
+
+-- change the mode of the ghosts to scatter
+toScatter :: Ghost -> Ghost
+toScatter g = g {mode = Scatter, gTimer = 0}
+
+-- change the mode of the ghosts to chase
+toChase :: Ghost -> Ghost
+toChase g = g {mode = Chase, gTimer = 0 }
 
 
 -- | Handle user input
@@ -125,9 +150,11 @@ canMove (PacMan (x,y) pacdirec) maze = (snd nextTile) /= Wall && (snd nextTile) 
 ---Ghost step calcs
 
 stepGhost :: GameState -> Ghost -> Ghost
-stepGhost gstate g | canChangeDirection gstate g = ghostMoveOne (chooseGhost gstate g)
+stepGhost gstate g | canChangeDirection gstate g = (ghostMoveOne (chooseGhost gstate g)) {gTimer = newTimer}
                    | checkWrap (gpoint g) (gdirection g) = wrapAroundGhost g
                    | otherwise = ghostMoveOne g
+                        where
+                            newTimer = (gTimer g) + 1
 
 
 --Moves the ghost one forward when it cant turn

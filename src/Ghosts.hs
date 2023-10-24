@@ -11,6 +11,7 @@ data Ghost = Ghost {
     , mode :: Mode 
     , gpoint :: Loadlevel.Point 
     , gdirection :: Loadlevel.Direction
+    , gTimer :: Int
 }
 
 wrapAroundGhost :: Ghost -> Ghost
