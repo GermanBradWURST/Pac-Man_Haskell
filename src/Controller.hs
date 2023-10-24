@@ -12,8 +12,11 @@ import System.Random
 import Control.Concurrent (dupChan)
 
 
-searchMaze :: Maze -> (Int, Int) -> Tile
-searchMaze m (x, y) = (m!!y)!!x
+searchMaze :: Maze -> (Float, Float) -> Tile
+searchMaze m (x, y) = (m!!inty)!!intx 
+    where
+        inty = toInt y 
+        intx = toInt x
 
 --Checks for wrap around
 checkWrap :: Loadlevel.Point -> Direction -> Bool
@@ -112,27 +115,30 @@ changeDirection (PacMan (x,y) pacdirec) direc maze
     |(validMove (PacMan (x,y) pacdirec) direc maze) = (PacMan (x,y) direc)
     |otherwise = (PacMan (x,y) pacdirec)
 
-
+toInt :: Float -> Int 
+toInt f = round f
 
 --helper function to check validity of a move
 validMove :: PacMan -> Direction -> Maze -> Bool
 validMove (PacMan (x,y) pacdirec) direc maze = (snd nextTile) /= Wall && (snd nextTile) /= Barrier
     where
-        currentRow = maze !! y
-        rowUp = maze !! (y-1)
-        rowDown = maze !! (y+1)
-        nextTile    |direc == GoUp = rowUp !! x
-                    |direc == GoDown = rowDown !! x
-                    |direc == GoRight = currentRow !! (x + 1)
-                    |direc == GoLeft = currentRow !! (x - 1)
+        inty = toInt y
+        intx = toInt x
+        currentRow = maze !! inty
+        rowUp = maze !! (inty-1)
+        rowDown = maze !! (inty+1)
+        nextTile    |direc == GoUp = rowUp !! intx
+                    |direc == GoDown = rowDown !! intx
+                    |direc == GoRight = currentRow !! (intx + 1)
+                    |direc == GoLeft = currentRow !! (intx - 1)
 
 --allowing pacman to move, which as of now is just teleporting 1 block
 movePacMan :: PacMan -> GameState -> PacMan
 movePacMan p@(PacMan (x,y) pacdirec) gstate
-    |(pacdirec == GoUp) && canMove p (maze gstate) = (PacMan (x,y-1) pacdirec)
-    |pacdirec == GoDown && canMove p (maze gstate) = (PacMan (x, y+1) pacdirec)
-    |pacdirec == GoRight && canMove p (maze gstate) = (PacMan (x + 1,y) pacdirec)
-    |pacdirec == GoLeft && canMove p (maze gstate) = (PacMan (x - 1, y) pacdirec)
+    |(pacdirec == GoUp) && canMove p (maze gstate) = (PacMan (x,y-0.25) pacdirec)
+    |pacdirec == GoDown && canMove p (maze gstate) = (PacMan (x, y+0.25) pacdirec)
+    |pacdirec == GoRight && canMove p (maze gstate) = (PacMan (x + 0.25,y) pacdirec)
+    |pacdirec == GoLeft && canMove p (maze gstate) = (PacMan (x - 0.25, y) pacdirec)
     |otherwise = p
 
 
@@ -140,13 +146,15 @@ movePacMan p@(PacMan (x,y) pacdirec) gstate
 canMove :: PacMan -> Maze -> Bool
 canMove (PacMan (x,y) pacdirec) maze = (snd nextTile) /= Wall && (snd nextTile) /= Barrier
     where
-        currentRow = maze !! y
-        rowUp = maze !! (y-1)
-        rowDown = maze !! (y+1)
-        nextTile    |pacdirec == GoUp = rowUp !! x
-                    |pacdirec == GoDown = rowDown !! x
-                    |pacdirec == GoRight = currentRow !! (x + 1)
-                    |pacdirec == GoLeft = currentRow !! (x - 1) 
+        inty = toInt y
+        intx = toInt x
+        currentRow = maze !! inty
+        rowUp = maze !! (inty-1)
+        rowDown = maze !! (inty+1)
+        nextTile    |pacdirec == GoUp = rowUp !! intx
+                    |pacdirec == GoDown = rowDown !! intx
+                    |pacdirec == GoRight = currentRow !! (intx + 1)
+                    |pacdirec == GoLeft = currentRow !! (intx - 1) 
 
 ---Ghost step calcs
 
@@ -169,10 +177,10 @@ incrementTimer ghost
 
 --Moves the ghost one forward when it cant turn
 ghostMoveOne :: Ghost -> Ghost
-ghostMoveOne g | gdirection g == GoUp = g {gpoint = (a, b + 1)}
-               | gdirection g == GoRight = g {gpoint = (a + 1, b)}
-               | gdirection g == GoLeft = g {gpoint = (a - 1, b)}
-               | gdirection g == GoDown = g {gpoint = (a, b - 1)}
+ghostMoveOne g | gdirection g == GoUp = g {gpoint = (a, b + 0.25)}
+               | gdirection g == GoRight = g {gpoint = (a + 0.25, b)}
+               | gdirection g == GoLeft = g {gpoint = (a - 0.25, b)}
+               | gdirection g == GoDown = g {gpoint = (a, b - 0.25)}
                 where (a,b) = gpoint g
 
 
@@ -208,11 +216,11 @@ checkDirectionRightLeft m p | t1 /= Barrier && t1 /= Wall = True
 stepBlinky :: GameState -> Ghost -> Loadlevel.Point
 stepBlinky gstate g | mode g == Chase = (x,y)
                     | mode g == Scatter = (26, 0) 
-                    | otherwise = (xx, yy)
+                    | otherwise = (fromIntegral xx, fromIntegral yy)
                     where (x,y) = point (pacman gstate)
                           (a, b) = gpoint g
-                          xx = generateRandomNum (a - 10, a + 10)
-                          yy = generateRandomNum (b - 10, b + 10)
+                          xx = generateRandomNum ((toInt a) - 10, (toInt a) + 10)
+                          yy = generateRandomNum ((toInt b) - 10, (toInt b) + 10)
 
 
 
@@ -220,7 +228,7 @@ stepBlinky gstate g | mode g == Chase = (x,y)
 stepInky :: GameState -> Ghost -> Loadlevel.Point
 stepInky gstate g | mode g == Chase = (ga, gb)
                   | mode g == Scatter = (26, 30)
-                  | otherwise = (xx, yy)
+                  | otherwise = (fromIntegral xx, fromIntegral yy)
          where (x,y) = point (pacman gstate)
                (gx, gy) = gpoint ((ghosts gstate)!!0)
                dir = direction (pacman gstate)
@@ -229,36 +237,36 @@ stepInky gstate g | mode g == Chase = (ga, gb)
                      | dir == GoLeft = (x - 2, y)
                      | dir == GoRight = (x + 2, y)
                (ga, gb) = (a + (a - gx), b + (b - gy))
-               xx = generateRandomNum (a - 10, a + 10)
-               yy = generateRandomNum (b - 10, b + 10)
+               xx = generateRandomNum ((toInt a) - 10, (toInt a) + 10)
+               yy = generateRandomNum ((toInt b) - 10, (toInt b) + 10)
                
                         
 
 stepPinky :: GameState -> Ghost -> Loadlevel.Point
 stepPinky gstate g | mode g == Chase = (a, b)
                    | mode g == Scatter = (1, 0)
-                   | otherwise = (xx, yy)
+                   | otherwise = (fromIntegral xx, fromIntegral yy)
          where (x,y) = point (pacman gstate)
                dir = direction (pacman gstate)
                (a,b) | dir == GoUp = (x - 4, y - 4)
                      | dir == GoDown = (x, y + 4)
                      | dir == GoLeft = (x - 4, y)
                      | dir == GoRight = (x + 4, y)
-               xx = generateRandomNum (a - 10, a + 10)
-               yy = generateRandomNum (b - 10, b + 10)
+               xx = generateRandomNum ((toInt a) - 10, (toInt a) + 10)
+               yy = generateRandomNum ((toInt b) - 10, (toInt b) + 10)
 
 
 stepClyde :: GameState -> Ghost -> Loadlevel.Point
 stepClyde gstate g | mode g == Chase = (gx, gy)
                    | mode g == Scatter = (1, 30)
-                   | otherwise = (xx, yy)
+                   | otherwise = (fromIntegral xx, fromIntegral yy)
          where (x,y) = point (pacman gstate)
                (a, b) = gpoint g
                dis = calcDist ((x,y), (a,b), GoRight)
                (gx, gy) | dis > 8 = (x, y)
                         | otherwise = (1, 30)
-               xx = generateRandomNum (a - 10, a + 10)
-               yy = generateRandomNum (b - 10, b + 10)
+               xx = generateRandomNum ((toInt a) - 10, (toInt a) + 10)
+               yy = generateRandomNum ((toInt b) - 10, (toInt b) + 10)
 
                
 
@@ -287,8 +295,8 @@ findIndex (y:ys) x | x == y = 0
 calcDist :: (Loadlevel.Point, Loadlevel.Point, Loadlevel.Direction) -> Float
 calcDist ((x1 , y1), (x2 , y2), d) = sqrt (x'*x' + y'*y')
     where
-      x' = fromIntegral (x1 - x2)
-      y' = fromIntegral (y1 - y2)
+      x' =  (x1 - x2)
+      y' =  (y1 - y2)
 
 -- filters directions a ghost cant go in
 filtWall :: Maze -> (Loadlevel.Point, Loadlevel.Point, Loadlevel.Direction) -> Bool

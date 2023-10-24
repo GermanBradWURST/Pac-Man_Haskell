@@ -53,8 +53,8 @@ translatePellet pict tile = translate (x*16-216) (240-(y*16)) pict
                 xs = fst (fst tile)
                 ys = snd (fst tile)
                 pos = (xs,ys)
-                x = (fromIntegral . fst) pos
-                y = (fromIntegral . snd) pos
+                x =  fst pos
+                y =  snd pos
 
 
                 
@@ -69,8 +69,8 @@ translatePacMan :: Picture -> PacMan -> Picture
 translatePacMan pict (PacMan (xs, ys) direc) = translate (x*16-216) (240-(y*16)) d
             where
                     pos = (xs,ys)
-                    x = (fromIntegral . fst) pos
-                    y = (fromIntegral . snd) pos
+                    x =  fst pos
+                    y =  snd pos
                     dp = direc
                     d | dp == GoUp = Rotate (-90) pict
                       | dp == GoRight = pict
@@ -83,8 +83,8 @@ translateGhost :: Picture -> Ghost -> Picture
 translateGhost pict (Ghost gtype mode (xs, ys) direc time) = translate (x*16-216) (240-(y*16)) d
             where
                     pos = (xs,ys)
-                    x = (fromIntegral . fst) pos
-                    y = (fromIntegral . snd) pos
+                    x =  fst pos
+                    y =  snd pos
                     dp = direc
                     d   | dp == GoLeft = rotate 180 pict
                         | otherwise = pict
