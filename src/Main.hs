@@ -28,8 +28,21 @@ main = do
     clydebmp <- loadBMP "src/sprites/Clyde.bmp"
     pinkybmp <- loadBMP "src/sprites/Pinky.bmp"
 
+    scorebmp <- loadBMP "src/sprites/SCORE.bmp"
+    nmr1bmp <- loadBMP "src/sprites/nmr1.bmp"
+    nmr2bmp <- loadBMP "src/sprites/nmr2.bmp"
+    nmr3bmp <- loadBMP "src/sprites/nmr3.bmp"
+    nmr4bmp <- loadBMP "src/sprites/nmr4.bmp"
+    nmr5bmp <- loadBMP "src/sprites/nmr5.bmp"
+    nmr6bmp <- loadBMP "src/sprites/nmr6.bmp"
+    nmr7bmp <- loadBMP "src/sprites/nmr7.bmp"
+    nmr8bmp <- loadBMP "src/sprites/nmr8.bmp"
+    nmr9bmp <- loadBMP "src/sprites/nmr9.bmp"
+    nmr0bmp <- loadBMP "src/sprites/nmr0.bmp"
 
-    let picturelist = [bgbmp, pelletbmp, powerupbmp, pacmanbmp, blinkybmp, inkybmp, clydebmp, pinkybmp]
+
+
+    let picturelist = [bgbmp, pelletbmp, powerupbmp, pacmanbmp, g1rbmp, scorebmp,nmr0bmp, nmr1bmp, nmr2bmp, nmr3bmp, nmr4bmp ,nmr5bmp, nmr6bmp, nmr7bmp, nmr8bmp, nmr9bmp]
     let blinky = Ghost Blinky Chase (13, 11) GoRight
     let inky = Ghost Inky Chase (13, 11) GoRight-- 13, 14
     let clyde = Ghost Clyde Chase (13, 11) GoRight-- 14, 14
@@ -40,7 +53,7 @@ main = do
 
     let initialstate = Model.initialState initialPacMan picturelist maze ghosts
 
-    playIO (InWindow "PacMan" (448, 530) (0, 0))
+    playIO (InWindow "PacMan" (448, 580) (0, 0))
              black
              7
              initialstate
