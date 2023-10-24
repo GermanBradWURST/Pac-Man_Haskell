@@ -108,12 +108,16 @@ inputKey (EventKey (Char c) _ _ _) (PacMan (x,y) d) gstate  -- If the user press
 inputKey _ _ gstate = gstate -- Otherwise keep the same
 
 
+makeRound :: Float -> Float
+makeRound f = fromIntegral (round f)
+
+
 --handling direction changes, pacman can't move in a certain direction if that would lead him 
 --directly into a wall
 changeDirection :: PacMan -> Direction -> Maze -> PacMan
 changeDirection (PacMan (x,y) pacdirec) direc maze
-    |(validMove (PacMan (x,y) pacdirec) direc maze) = (PacMan (x,y) direc)
-    |otherwise = (PacMan (x,y) pacdirec)
+    |(validMove (PacMan (x,y) pacdirec) direc maze) = (PacMan (makeRound x,makeRound y) direc)
+    |otherwise = (PacMan (makeRound x,makeRound y) pacdirec)
 
 toInt :: Float -> Int 
 toInt f = round f
