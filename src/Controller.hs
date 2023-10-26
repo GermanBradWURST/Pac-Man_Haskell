@@ -19,10 +19,11 @@ searchMaze m (x, y) = (m!!inty)!!intx
         intx = toInt x
 
 --Checks for wrap around
-checkWrap :: Loadlevel.Point -> Direction -> Bool
-checkWrap p d  | p == (0, 14) && d == GoLeft = True
+checkWrap :: (Float, Float) -> Direction -> Bool
+checkWrap p d  | p == (0,14) && d == GoLeft = True
                | p == (27, 14) && d == GoRight = True
                | otherwise = False
+                   
 
 generateRandomNum :: (Int, Int) -> Int
 generateRandomNum (minn, maxx) = fst $ randomR (minn, maxx) iRNG
@@ -53,11 +54,16 @@ stepPacMan gstate | checkWrap (point (pacman gstate)) (direction (pacman gstate)
 
 -- handles pacman eating pellets (and keeping score)
 eatPellet :: Tile -> PacMan -> Tile
-eatPellet tile (PacMan (x,y) d) = if ((fst tile) == (x,y)) && (snd tile) == Pellet then ((fst tile), Empty) else tile    
+eatPellet tile (PacMan (x,y) d) = if isClose (x,y) (fst tile) 0.3 && (snd tile) == Pellet then ((fst tile), Empty) else tile
 
 -- handles pacman eating super pellets
 eatSuperPellet :: Tile -> PacMan -> Tile
-eatSuperPellet tile (PacMan (x,y) d) = if ((fst tile) == (x,y)) && (snd tile) == SuperPellet then ((fst tile), Empty) else tile
+eatSuperPellet tile (PacMan (x,y) d) = if isClose (x,y) (fst tile) 0.3 && (snd tile) == SuperPellet then ((fst tile), Empty) else tile
+
+
+isClose :: (Float, Float) -> (Float, Float) -> Float -> Bool
+isClose (px, py) (tx, ty) range = sqrt ((px - tx) ^ 2 + (py - ty) ^ 2) <= range
+
 
 
 -- takes all the tiles and calculates how many of them contain a pellet, or a superpellet
@@ -76,7 +82,7 @@ scoreChange oldscore newscore = abs (oldscore - newscore) > 10
 changeGhostMode :: Bool -> [Ghost] -> [Ghost]
 changeGhostMode pred ghosts
     | pred = map toFrightened ghosts  
-    | ((gTimer fstGhost) `mod` 10 == 0) && ((mode fstGhost) == Frightened) = map toScatter ghosts
+    | ((gTimer fstGhost) `mod` 40 == 0) && ((mode fstGhost) == Frightened) = map toScatter ghosts
     | otherwise = ghosts
     where
         fstGhost = ghosts!!0
@@ -117,7 +123,7 @@ makeRound f = fromIntegral (round f)
 changeDirection :: PacMan -> Direction -> Maze -> PacMan
 changeDirection (PacMan (x,y) pacdirec) direc maze
     |(validMove (PacMan (x,y) pacdirec) direc maze) = (PacMan (makeRound x,makeRound y) direc)
-    |otherwise = (PacMan (makeRound x,makeRound y) pacdirec)
+    |otherwise = (PacMan ( x, y) pacdirec)
 
 toInt :: Float -> Int 
 toInt f = round f
