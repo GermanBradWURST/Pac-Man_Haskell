@@ -17,10 +17,11 @@ data GameState = GameState {
     , images :: [Picture]
     , score :: Int
     , ghostTimer :: Int
+    , lastPressed :: Char
 }
 
 initialState :: PacMan -> [Picture] -> Maze -> [Ghost] -> GameState
-initialState pacm p m g = GameState { viewState = Running, elapsedTime = 0 , pacman = initialPacMan, ghosts = g, maze = m , images = p, score = 0,ghostTimer = 0 } 
+initialState pacm p m g = GameState { viewState = Running, elapsedTime = 0 , pacman = initialPacMan, ghosts = g, maze = m , images = p, score = 0,ghostTimer = 0, lastPressed = 'w' } 
 
 initialPacMan :: PacMan
 initialPacMan = PacMan { PacMan.point = (14,23), PacMan.direction = Loadlevel.GoUp }
