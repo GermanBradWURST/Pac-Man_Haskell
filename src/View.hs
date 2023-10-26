@@ -86,7 +86,7 @@ translateGhost pict (Ghost gtype mode (xs, ys) direc time) = translate (x*16-216
                     x =  fst pos
                     y =  snd pos
                     dp = direc
-                    d   | dp == GoLeft = rotate 180 pict
+                    d   | dp == GoLeft = scale (-1) (1) pict
                         | otherwise = pict
 
 

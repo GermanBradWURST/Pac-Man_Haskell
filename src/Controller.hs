@@ -47,14 +47,11 @@ step secs gstate
 
 
     let newGhostTimer = upDateGhostTime isFrightened (ghostTimer gstate) secs
-
     putStrLn (show (mode (ghostsMode!!0)))
     putStrLn (show (gTimer (ghostsMode!!0)))
-    
+    putStrLn (show (gpoint (ghostsMode!!0)))
         
     return $ gstate { elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = ghostsMode, score = newScore, ghostTimer = newGhostTimer}
-
-
 
 stepPacMan :: GameState -> PacMan
 stepPacMan gstate | checkWrap (point (pacman gstate)) (direction (pacman gstate)) = wrapAroundPacMan (pacman gstate)
@@ -99,7 +96,7 @@ checkGhostFrightened (x:xs)  = mode x == Frightened || checkGhostFrightened xs
 
 changeGhostMode :: Float -> Bool -> Bool -> [Ghost] -> [Ghost]
 changeGhostMode gt isf pred ghosts
-    | pred = map toFrightened ghosts
+    | pred = map toFrightened ghosts  
     | ((gTimer fstGhost) `mod` 140 == 0) && ((mode fstGhost) == Frightened) = map toScatter ghosts
     | not isf && gt > 84 = map toChase ghosts
     | not isf && gt > 79 = map toScatter ghosts
@@ -132,23 +129,46 @@ input e gstate = return (inputKey e (pacman gstate) gstate)
 
 inputKey :: Event -> PacMan -> GameState -> GameState
 inputKey (EventKey (Char c) _ _ _) (PacMan (x,y) d) gstate  -- If the user presses a character key, show that one
+    |c == 's' && c /= lastPressed gstate = changeDirection GoDown gstate
+    |c == 'w' && c /= lastPressed gstate = changeDirection GoUp gstate
+    |c == 'a' && c /= lastPressed gstate = changeDirection GoLeft gstate
+    |c == 'd' && c /= lastPressed gstate = changeDirection GoRight gstate
+inputKey _ _ gstate = gstate -- Otherwise keep the same
+
+{-
+inputKey :: Event -> PacMan -> GameState -> GameState
+inputKey (EventKey (Char c) _ _ _) (PacMan (x,y) d) gstate  -- If the user presses a character key, show that one
     |c == 's' = gstate {pacman = changeDirection (pacman gstate) GoDown (maze gstate)}
     |c == 'w' = gstate {pacman = changeDirection (pacman gstate) GoUp (maze gstate)}
     |c == 'a' = gstate {pacman = changeDirection (pacman gstate) GoLeft (maze gstate)}
     |c == 'd' = gstate {pacman = changeDirection (pacman gstate) GoRight (maze gstate)}
 inputKey _ _ gstate = gstate -- Otherwise keep the same
-
+-}
 
 makeRound :: Float -> Float
 makeRound f = fromIntegral (round f)
 
+roundPoint :: (Float, Float) -> (Float, Float)
+roundPoint p = (makeRound (fst p), makeRound (snd p))
+
 
 --handling direction changes, pacman can't move in a certain direction if that would lead him 
 --directly into a wall
-changeDirection :: PacMan -> Direction -> Maze -> PacMan
-changeDirection (PacMan (x,y) pacdirec) direc maze
-    |(validMove (PacMan (x,y) pacdirec) direc maze) = (PacMan (makeRound x,makeRound y) direc)
-    |otherwise = (PacMan ( x, y) pacdirec)
+changeDirection :: Direction -> GameState -> GameState
+changeDirection direc gstate
+    |(validMove (PacMan (x,y) pacdirec) direc m) = gstate {pacman = (PacMan (makeRound x,makeRound y) direc), lastPressed = direcToChar direc}
+    |otherwise = gstate
+        where
+            direcToChar :: Direction -> Char
+            direcToChar d
+                |d == GoLeft = 'a'
+                |d == GoRight = 'd'
+                |d == GoUp = 'w'
+                |d == GoDown ='s'
+            (PacMan (x,y) pacdirec) = pacman gstate
+            m = maze gstate
+
+
 
 toInt :: Float -> Int 
 toInt f = round f
@@ -164,8 +184,9 @@ validMove (PacMan (x,y) pacdirec) direc maze = (snd nextTile) /= Wall && (snd ne
         rowDown = maze !! (inty+1)
         nextTile    |direc == GoUp = rowUp !! intx
                     |direc == GoDown = rowDown !! intx
-                    |direc == GoRight = currentRow !! (intx + 1)
-                    |direc == GoLeft = currentRow !! (intx - 1)
+                    |direc == GoRight && intx < 27 = currentRow !! (intx + 1)
+                    |direc == GoLeft && intx > 0= currentRow !! (intx - 1)
+                    |otherwise = currentRow !! intx
 
 --allowing pacman to move, which as of now is just teleporting 1 block
 movePacMan :: PacMan -> GameState -> PacMan
@@ -188,11 +209,11 @@ canMove (PacMan (x,y) pacdirec) maze = (snd nextTile) /= Wall && (snd nextTile) 
         rowDown = maze !! (inty+1)
         nextTile    |pacdirec == GoUp = rowUp !! intx
                     |pacdirec == GoDown = rowDown !! intx
-                    |pacdirec == GoRight = currentRow !! (intx + 1)
-                    |pacdirec == GoLeft = currentRow !! (intx - 1) 
+                    |pacdirec == GoRight && intx < 27 = currentRow !! (intx + 1)
+                    |pacdirec == GoLeft && intx > 0= currentRow !! (intx - 1) 
+                    |otherwise = currentRow !! intx
 
----Ghost step calcs
-
+--Ghost step calcs
 stepGhost :: GameState -> Ghost -> Ghost
 stepGhost gstate g | canChangeDirection gstate g = (ghostMoveOne (chooseGhost gstate g)) {gTimer = incrementTimer g}
                    | checkWrap (gpoint g) (gdirection g) = wrapAroundGhost g
@@ -306,7 +327,9 @@ stepClyde gstate g | mode g == Chase = (gx, gy)
                
 
 
--- determines which turn to make
+
+
+
 choosePath :: GameState -> Ghost -> Loadlevel.Point -> Ghost
 choosePath gstate g (x,y) = g {gdirection = direct}
               where list | gdirection g == GoUp = filter (filtWall (maze gstate)) [((a, b+1), (x,y), GoUp), ((a+1, b),(x,y), GoRight), ((a-1, b),(x,y), GoLeft)]
@@ -319,6 +342,8 @@ choosePath gstate g (x,y) = g {gdirection = direct}
                     ((v,h),(j,k),direct) = list!!ind
 
                     (a,b) = gpoint g
+
+ 
 
 
 findIndex :: [Float] -> Float -> Int
