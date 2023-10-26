@@ -44,14 +44,14 @@ step secs gstate
     let newmaze = [[eatSuperPellet tile pman | tile <- row] | row <- pelletmaze] -- checking if the current pacman is eating a super pellet
     let newScore = 10  * (260 - (calculateScore (concat(maze gstate))))
     let ghostsMode = changeGhostMode (ghostTimer gstate) isFrightened (scoreChange (score gstate) newScore) (glist)
-
-
+    let newlives = lives (checkCollission pman ghostsMode gstate)
     let newGhostTimer = upDateGhostTime isFrightened (ghostTimer gstate) secs
-    putStrLn (show (mode (ghostsMode!!0)))
-    putStrLn (show (gTimer (ghostsMode!!0)))
-    putStrLn (show (gpoint (ghostsMode!!0)))
+    --putStrLn (show (mode (ghostsMode!!0)))
+    --putStrLn (show (gTimer (ghostsMode!!0)))
+    --putStrLn (show (gpoint (ghostsMode!!0)))
+    putStrLn (show (lives gstate))
         
-    return $ gstate { elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = ghostsMode, score = newScore, ghostTimer = newGhostTimer}
+    return $ gstate { elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = ghostsMode, score = newScore, ghostTimer = newGhostTimer, lives = newlives}
 
 stepPacMan :: GameState -> PacMan
 stepPacMan gstate | checkWrap (point (pacman gstate)) (direction (pacman gstate)) = wrapAroundPacMan (pacman gstate)
@@ -67,19 +67,9 @@ eatPellet tile (PacMan (x,y) d) = if isClose (x,y) (fst tile) 0.3 && (snd tile) 
 eatSuperPellet :: Tile -> PacMan -> Tile
 eatSuperPellet tile (PacMan (x,y) d) = if isClose (x,y) (fst tile) 0.3 && (snd tile) == SuperPellet then ((fst tile), Empty) else tile
 
-
+-- seeing if two points are in a given range off each other
 isClose :: (Float, Float) -> (Float, Float) -> Float -> Bool
 isClose (px, py) (tx, ty) range = sqrt ((px - tx) ^ 2 + (py - ty) ^ 2) <= range
-
-{-
-inputKey :: Event -> PacMan -> GameState -> GameState
-inputKey (EventKey (Char c) _ _ _) (PacMan (x,y) d) gstate  -- If the user presses a character key, show that one
-    |c == 's' = gstate {pacman = changeDirection (pacman gstate) GoDown (maze gstate)}
-    |c == 'w' = gstate {pacman = changeDirection (pacman gstate) GoUp (maze gstate)}
-    |c == 'a' = gstate {pacman = changeDirection (pacman gstate) GoLeft (maze gstate)}
-    |c == 'd' = gstate {pacman = changeDirection (pacman gstate) GoRight (maze gstate)}
-inputKey _ _ gstate = gstate -- Otherwise keep the same
--}
 
 -- takes all the tiles and calculates how many of them contain a pellet, or a superpellet
 calculateScore :: [Tile] -> Int
@@ -93,6 +83,21 @@ calculateScore tiles  = (length (pelletList tiles))  + (5 * (length (superPellet
 -- if the score changes with more than 10 points in a single step it means a power pellet has been eaten
 scoreChange :: Int -> Int -> Bool
 scoreChange oldscore newscore = abs (oldscore - newscore) > 10 
+
+checkCollission :: PacMan -> [Ghost] -> GameState -> GameState
+checkCollission pman [] gstate = gstate
+checkCollission pman (x:xs) gstate = 
+        if  (px, py) ==  (gpoint x)  && (mode x) /= Frightened then gstate {lives = decreaseLive}
+        else checkCollission pman xs gstate
+            where
+                (PacMan (px, py) pd) = pman
+                decreaseLive = if (lives gstate) > 0 then (lives gstate) - 1 else (lives gstate)
+
+
+
+
+
+
 
 upDateGhostTime :: Bool -> Float -> Float -> Float
 upDateGhostTime b f secs | not b = f + secs
@@ -143,15 +148,6 @@ inputKey (EventKey (Char c) _ _ _) (PacMan (x,y) d) gstate  -- If the user press
     |c == 'd' && c /= lastPressed gstate = changeDirection GoRight gstate
 inputKey _ _ gstate = gstate -- Otherwise keep the same
 
-{-
-inputKey :: Event -> PacMan -> GameState -> GameState
-inputKey (EventKey (Char c) _ _ _) (PacMan (x,y) d) gstate  -- If the user presses a character key, show that one
-    |c == 's' = gstate {pacman = changeDirection (pacman gstate) GoDown (maze gstate)}
-    |c == 'w' = gstate {pacman = changeDirection (pacman gstate) GoUp (maze gstate)}
-    |c == 'a' = gstate {pacman = changeDirection (pacman gstate) GoLeft (maze gstate)}
-    |c == 'd' = gstate {pacman = changeDirection (pacman gstate) GoRight (maze gstate)}
-inputKey _ _ gstate = gstate -- Otherwise keep the same
--}
 
 makeRound :: Float -> Float
 makeRound f = fromIntegral (round f)
@@ -176,15 +172,6 @@ changeDirection direc gstate
             (PacMan (x,y) pacdirec) = pacman gstate
             m = maze gstate
 
-{-
-inputKey :: Event -> PacMan -> GameState -> GameState
-inputKey (EventKey (Char c) _ _ _) (PacMan (x,y) d) gstate  -- If the user presses a character key, show that one
-    |c == 's' = gstate {pacman = changeDirection (pacman gstate) GoDown (maze gstate)}
-    |c == 'w' = gstate {pacman = changeDirection (pacman gstate) GoUp (maze gstate)}
-    |c == 'a' = gstate {pacman = changeDirection (pacman gstate) GoLeft (maze gstate)}
-    |c == 'd' = gstate {pacman = changeDirection (pacman gstate) GoRight (maze gstate)}
-inputKey _ _ gstate = gstate -- Otherwise keep the same
--}
 
 toInt :: Float -> Int 
 toInt f = round f
@@ -234,8 +221,8 @@ stepGhost :: GameState -> Ghost -> Ghost
 stepGhost gstate g | canChangeDirection gstate g = (ghostMoveOne (chooseGhost gstate g)) {gTimer = incrementTimer g}
                    | checkWrap (gpoint g) (gdirection g) = wrapAroundGhost g
                    | otherwise = ghostMoveOne g
-                        -- where
-                           --  newTimer = (gTimer g) + 1
+                      
+                           
 
 
 -- icrementing the fright counter 
@@ -249,10 +236,10 @@ incrementTimer ghost
 
 --Moves the ghost one forward when it cant turn
 ghostMoveOne :: Ghost -> Ghost
-ghostMoveOne g | gdirection g == GoUp = g {gpoint = (a, b + 0.25)}
-               | gdirection g == GoRight = g {gpoint = (a + 0.25, b)}
-               | gdirection g == GoLeft = g {gpoint = (a - 0.25, b)}
-               | gdirection g == GoDown = g {gpoint = (a, b - 0.25)}
+ghostMoveOne g | gdirection g == GoUp = g {gpoint = (makeRound a, b + 0.25)}
+               | gdirection g == GoRight = g {gpoint = (a + 0.25, makeRound b)}
+               | gdirection g == GoLeft = g {gpoint = (a - 0.25, makeRound b)}
+               | gdirection g == GoDown = g {gpoint = (makeRound a, b - 0.25)}
                 where (a,b) = gpoint g
 
 
@@ -287,7 +274,7 @@ checkDirectionRightLeft m p | t1 /= Barrier && t1 /= Wall = True
 -- chooses target tile
 stepBlinky :: GameState -> Ghost -> Loadlevel.Point
 stepBlinky gstate g | mode g == Chase = (x,y)
-                    | mode g == Scatter = (26, 0) 
+                    | mode g == Scatter = (26.0, 0.0) 
                     | otherwise = (fromIntegral xx, fromIntegral yy)
                     where (x,y) = point (pacman gstate)
                           (a, b) = gpoint g
@@ -299,7 +286,7 @@ stepBlinky gstate g | mode g == Chase = (x,y)
 
 stepInky :: GameState -> Ghost -> Loadlevel.Point
 stepInky gstate g | mode g == Chase = (ga, gb)
-                  | mode g == Scatter = (26, 30)
+                  | mode g == Scatter = (26.0, 30.0)
                   | otherwise = (fromIntegral xx, fromIntegral yy)
          where (x,y) = point (pacman gstate)
                (gx, gy) = gpoint ((ghosts gstate)!!0)
@@ -316,7 +303,7 @@ stepInky gstate g | mode g == Chase = (ga, gb)
 
 stepPinky :: GameState -> Ghost -> Loadlevel.Point
 stepPinky gstate g | mode g == Chase = (a, b)
-                   | mode g == Scatter = (1, 0)
+                   | mode g == Scatter = (1.0, 0.0)
                    | otherwise = (fromIntegral xx, fromIntegral yy)
          where (x,y) = point (pacman gstate)
                dir = direction (pacman gstate)
@@ -330,7 +317,7 @@ stepPinky gstate g | mode g == Chase = (a, b)
 
 stepClyde :: GameState -> Ghost -> Loadlevel.Point
 stepClyde gstate g | mode g == Chase = (gx, gy)
-                   | mode g == Scatter = (1, 30)
+                   | mode g == Scatter = (1.0, 30.0)
                    | otherwise = (fromIntegral xx, fromIntegral yy)
          where (x,y) = point (pacman gstate)
                (a, b) = gpoint g
@@ -348,15 +335,14 @@ stepClyde gstate g | mode g == Chase = (gx, gy)
 
 choosePath :: GameState -> Ghost -> Loadlevel.Point -> Ghost
 choosePath gstate g (x,y) = g {gdirection = direct}
-              where list | gdirection g == GoUp = filter (filtWall (maze gstate)) [((a, b+1), (x,y), GoUp), ((a+1, b),(x,y), GoRight), ((a-1, b),(x,y), GoLeft)]
+              where list | gdirection g == GoUp = filter (filtWall (maze gstate)) [((a, b +1), (x,y), GoUp), ((a+1, b),(x,y), GoRight), ((a-1, b),(x,y), GoLeft)]
                          | gdirection g == GoDown = filter (filtWall (maze gstate)) [((a, b-1), (x,y), GoDown), ((a+1, b),(x,y), GoRight), ((a-1, b),(x,y), GoLeft)]
                          | gdirection g == GoLeft = filter (filtWall (maze gstate)) [((a, b+1), (x,y), GoUp), ((a, b-1),(x,y), GoDown), ((a-1, b),(x,y), GoLeft)]
                          | gdirection g == GoRight = filter (filtWall (maze gstate)) [((a, b+1), (x,y), GoUp), ((a, b-1), (x,y), GoDown), ((a+1, b), (x,y), GoRight)]
-                    listfilt = map  calcDist list
+                    listfilt = map calcDist list
                     min = minimum listfilt
                     ind = findIndex listfilt min
                     ((v,h),(j,k),direct) = list!!ind
-
                     (a,b) = gpoint g
 
  

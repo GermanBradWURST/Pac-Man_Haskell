@@ -24,10 +24,11 @@ viewPure gstate = case viewState gstate of
             pellets = map (translatePellet (scaledlist!!1)) (pelletList (concat (maze gstate)))
             superPellets = map (translatePellet (scaledlist!!2)) (superPelletList (concat (maze gstate)))
             scoreText = [translateScoreText ((images gstate)!! 8)]
-            score =  [translateScore (scoreList!!(intList!!0)) 10 , translateScore (scoreList!!(intList!!1)) 25 , translateScore (scoreList!!(intList!!2)) 40 , translateScore (scoreList!!(intList!!3)) 55 ]
+            pacmanlives = translatePacmanLives (scaledlist!!3) (amountToListLives (lives gstate))
+            score = [translateScore (scoreList!!(intList!!0)) 10 , translateScore (scoreList!!(intList!!1)) 25 , translateScore (scoreList!!(intList!!2)) 40 , translateScore (scoreList!!(intList!!3)) 55 ]  
                 where 
                     intList = calculateScore gstate
-        pictures ([scaledlist!!0] ++ pellets ++ superPellets ++ [pacpic, blinky, inky, pinky, clyde] ++ scoreText ++ score)
+        pictures ([scaledlist!!0] ++ pellets ++ superPellets ++ [pacpic, blinky, inky, pinky, clyde] ++ scoreText ++ score ++ pacmanlives)
 
 
 calculateScore :: GameState -> [Int]
@@ -77,6 +78,22 @@ translatePacMan pict (PacMan (xs, ys) direc) = translate (x*16-216) (240-(y*16))
                       | dp == GoLeft = Rotate 180 pict
                       | dp == GoDown = Rotate 90 pict
                       | otherwise = pict
+
+
+
+translatePacmanLives :: Picture -> [Int] -> [Picture]
+translatePacmanLives _ [] = []
+translatePacmanLives pict (x:xs) = translate ( (-200) + (30 * (fromIntegral (length xs)))) (-270) pict : translatePacmanLives pict xs
+                      
+
+
+amountToListLives :: Int -> [Int] 
+amountToListLives i
+    |i == 3 = [1,1,1]
+    |i == 2 = [1,1]
+    |i == 1 = [1]
+    |otherwise = []
+
 
 
 translateGhost :: Picture -> Ghost -> Picture
