@@ -21,10 +21,10 @@ main = do
 
     images <- loadImages
 
-    let blinky = Ghost Blinky Chase (13, 11) GoRight 1
-    let inky = Ghost Inky Chase (13, 11) GoRight 1 -- 13, 14
-    let clyde = Ghost Clyde Chase (13, 11) GoRight 1 -- 14, 14
-    let pinky = Ghost Pinky Chase (13, 11) GoRight 1 -- 13, 13
+    let blinky = Ghost Blinky Scatter (13, 11) GoRight 1
+    let inky = Ghost Inky Scatter (13, 11) GoRight 1 -- 13, 14
+    let clyde = Ghost Clyde Scatter (13, 11) GoRight 1 -- 14, 14
+    let pinky = Ghost Pinky Scatter (13, 11) GoRight 1 -- 13, 13
     
     let ghosts = [blinky, inky, pinky, clyde]
 

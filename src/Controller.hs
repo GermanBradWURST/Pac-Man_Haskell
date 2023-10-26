@@ -35,16 +35,26 @@ iRNG = mkStdGen 2231542
 step :: Float -> GameState -> IO GameState
 step secs gstate
   = do
+
+    let isFrightened = checkGhostFrightened (ghosts gstate)
+
     let pman = stepPacMan gstate
     let glist = map (stepGhost gstate) (ghosts gstate)
     let pelletmaze = [[eatPellet tile pman | tile <- row] | row <- maze gstate] -- checking if the current pacman is eating a pellet
     let newmaze = [[eatSuperPellet tile pman | tile <- row] | row <- pelletmaze] -- checking if the current pacman is eating a super pellet
     let newScore = 10  * (260 - (calculateScore (concat(maze gstate))))
-    let ghostsMode = changeGhostMode (scoreChange (score gstate) newScore) (glist)
+    let ghostsMode = changeGhostMode (ghostTimer gstate) isFrightened (scoreChange (score gstate) newScore) (glist)
+
+
+    let newGhostTimer = upDateGhostTime isFrightened (ghostTimer gstate) secs
+
     putStrLn (show (mode (ghostsMode!!0)))
     putStrLn (show (gTimer (ghostsMode!!0)))
+    
         
-    return $ gstate { elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = ghostsMode, score = newScore}
+    return $ gstate { elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = ghostsMode, score = newScore, ghostTimer = newGhostTimer}
+
+
 
 stepPacMan :: GameState -> PacMan
 stepPacMan gstate | checkWrap (point (pacman gstate)) (direction (pacman gstate)) = wrapAroundPacMan (pacman gstate)
@@ -79,10 +89,25 @@ calculateScore tiles  = (length (pelletList tiles))  + (5 * (length (superPellet
 scoreChange :: Int -> Int -> Bool
 scoreChange oldscore newscore = abs (oldscore - newscore) > 10 
 
-changeGhostMode :: Bool -> [Ghost] -> [Ghost]
-changeGhostMode pred ghosts
-    | pred = map toFrightened ghosts  
-    | ((gTimer fstGhost) `mod` 40 == 0) && ((mode fstGhost) == Frightened) = map toScatter ghosts
+upDateGhostTime :: Bool -> Float -> Float -> Float
+upDateGhostTime b f secs | not b = f + secs
+                         | otherwise = f
+
+checkGhostFrightened :: [Ghost] -> Bool
+checkGhostFrightened [] = False
+checkGhostFrightened (x:xs)  = mode x == Frightened || checkGhostFrightened xs
+
+changeGhostMode :: Float -> Bool -> Bool -> [Ghost] -> [Ghost]
+changeGhostMode gt isf pred ghosts
+    | pred = map toFrightened ghosts
+    | ((gTimer fstGhost) `mod` 140 == 0) && ((mode fstGhost) == Frightened) = map toScatter ghosts
+    | not isf && gt > 84 = map toChase ghosts
+    | not isf && gt > 79 = map toScatter ghosts
+    | not isf && gt > 59 = map toChase ghosts
+    | not isf && gt > 54 = map toScatter ghosts
+    | not isf && gt > 34 = map toChase ghosts
+    | not isf && gt > 27 = map toScatter ghosts
+    | not isf && gt > 7 = map toChase ghosts
     | otherwise = ghosts
     where
         fstGhost = ghosts!!0

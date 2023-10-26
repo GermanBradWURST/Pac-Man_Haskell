@@ -16,7 +16,7 @@ data GameState = GameState {
     , maze :: Maze
     , images :: [Picture]
     , score :: Int
-    , ghostTimer :: Int
+    , ghostTimer :: Float
 }
 
 initialState :: PacMan -> [Picture] -> Maze -> [Ghost] -> GameState
