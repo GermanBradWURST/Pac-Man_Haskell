@@ -105,7 +105,7 @@ checkGhostFrightened (x:xs)  = mode x == Frightened || checkGhostFrightened xs
 changeGhostMode :: Float -> Bool -> Bool -> [Ghost] -> [Ghost]
 changeGhostMode gt isf pred ghosts
     | pred = map toFrightened ghosts  
-    | ((gTimer fstGhost) `mod` 140 == 0) && ((mode fstGhost) == Frightened) = map toScatter ghosts
+    | ((gTimer fstGhost) `mod` 140 == 0) && ((mode fstGhost) == Frightened) = map toChase ghosts
     | not isf && gt > 84 = map toChase ghosts
     | not isf && gt > 79 = map toScatter ghosts
     | not isf && gt > 59 = map toChase ghosts
