@@ -124,15 +124,15 @@ changeGhostMode gt isf pred ghosts
         
 -- change the mode of the ghosts to frightened
 toFrightened :: Ghost -> Ghost
-toFrightened g = g { mode = Frightened }
+toFrightened g = g { mode = Frightened, speed = 0.15 }
 
 -- change the mode of the ghosts to scatter
 toScatter :: Ghost -> Ghost
-toScatter g = g {mode = Scatter, gTimer = 1}
+toScatter g = g {mode = Scatter, gTimer = 1, speed = 0.25}
 
 -- change the mode of the ghosts to chase
 toChase :: Ghost -> Ghost
-toChase g = g {mode = Chase, gTimer = 1 }
+toChase g = g {mode = Chase, gTimer = 1, speed = 0.25 }
 
 
 -- | Handle user input
@@ -250,11 +250,13 @@ incrementTimer ghost
 
 --Moves the ghost one forward when it cant turn
 ghostMoveOne :: Ghost -> Ghost
-ghostMoveOne g | gdirection g == GoUp = g {gpoint = (makeRound a, b + 0.25)}
-               | gdirection g == GoRight = g {gpoint = (a + 0.25, makeRound b)}
-               | gdirection g == GoLeft = g {gpoint = (a - 0.25, makeRound b)}
-               | gdirection g == GoDown = g {gpoint = (makeRound a, b - 0.25)}
-                where (a,b) = gpoint g
+ghostMoveOne g | gdirection g == GoUp = g {gpoint = (makeRound a, b + s)}
+               | gdirection g == GoRight = g {gpoint = (a + s, makeRound b)}
+               | gdirection g == GoLeft = g {gpoint = (a - s, makeRound b)}
+               | gdirection g == GoDown = g {gpoint = (makeRound a, b - s)}
+                where 
+                    (a,b) = gpoint g
+                    s = speed g
 
 
 -- checks if a ghost can change direction

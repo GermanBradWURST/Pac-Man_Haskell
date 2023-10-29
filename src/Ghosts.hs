@@ -12,6 +12,7 @@ data Ghost = Ghost {
     , gpoint :: Loadlevel.Point 
     , gdirection :: Loadlevel.Direction
     , gTimer :: Int
+    , speed :: Float
 }
 
 wrapAroundGhost :: Ghost -> Ghost
