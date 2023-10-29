@@ -30,12 +30,17 @@ viewPure gstate = case viewState gstate of
                     intList = calculateScore gstate
         pictures ([scaledlist!!0] ++ pellets ++ superPellets ++ [pacpic, blinky, inky, pinky, clyde] ++ scoreText ++ score ++ pacmanlives)
     Paused -> do
-        let scaledPaccy = map (Scale 5.0 5.0) ([(images gstate)!!3])
+        let scaledPaccy =  map (Scale 5.0 5.0) ([(images gstate)!!3])
             scaledText = map (Scale 2.0 2.0 ) ([(images gstate)!!20])
             pacPause = translatePacMan (scaledPaccy!!0) (PacMan (14,16) GoRight)
             pauseText = translateText (scaledText!!0) 0 60
-
         pictures ([pacPause] ++ [pauseText])
+    
+    GameOver -> do
+        let scaledText = map (Scale 2.0 2.0) ([(images gstate)!!21])
+            gameover = translateText (scaledText!!0) 0 0 
+        pictures ([gameover])
+        
 
 
 

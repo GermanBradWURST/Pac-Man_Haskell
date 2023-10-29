@@ -45,9 +45,10 @@ step secs gstate
         let ghostsMode = changeGhostMode (ghostTimer gstate) isFrightened (scoreChange (score gstate) newScore) (glist)
         let newlives = lives (checkCollission pman ghostsMode gstate)
         let newGhostTimer = upDateGhostTime isFrightened (ghostTimer gstate) secs
+        let possibleGameOver = viewState (gameOver gstate)
         --putStrLn (show (mode (ghostsMode!!0)))
         putStrLn (show (viewState gstate))
-        return $ gstate {  elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = ghostsMode, score = newScore, ghostTimer = newGhostTimer, lives = newlives}
+        return $ gstate { viewState = possibleGameOver, elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = ghostsMode, score = newScore, ghostTimer = newGhostTimer, lives = newlives}
     | (viewState gstate) == Paused = do
         return $ gstate
     | otherwise = return $ gstate
@@ -155,6 +156,11 @@ pauseGame gstate lastP c
     | c == 'p' && lastP == 'p' = gstate {viewState = Running, lastPressed = 'p'}
     | c=='p' && lastP /= 'p' = gstate {viewState = Paused, lastPressed = 'p'}
     |otherwise = gstate
+
+gameOver :: GameState -> GameState
+gameOver gstate 
+    | (lives gstate) == 0 = gstate {viewState = GameOver}
+    | otherwise = gstate
 
 
 makeRound :: Float -> Float
