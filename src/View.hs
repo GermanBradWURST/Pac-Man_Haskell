@@ -23,12 +23,20 @@ viewPure gstate = case viewState gstate of
             clyde = translateGhost (scaledlist!!6) ((ghosts gstate)!!3)
             pellets = map (translatePellet (scaledlist!!1)) (pelletList (concat (maze gstate)))
             superPellets = map (translatePellet (scaledlist!!2)) (superPelletList (concat (maze gstate)))
-            scoreText = [translateScoreText ((images gstate)!! 8)]
+            scoreText = [translateText ((images gstate)!! 8) (-60) 270 ]
             pacmanlives = translatePacmanLives (scaledlist!!3) (amountToListLives (lives gstate))
             score = [translateScore (scoreList!!(intList!!0)) 10 , translateScore (scoreList!!(intList!!1)) 25 , translateScore (scoreList!!(intList!!2)) 40 , translateScore (scoreList!!(intList!!3)) 55 ]  
                 where 
                     intList = calculateScore gstate
         pictures ([scaledlist!!0] ++ pellets ++ superPellets ++ [pacpic, blinky, inky, pinky, clyde] ++ scoreText ++ score ++ pacmanlives)
+    Paused -> do
+        let scaledPaccy = map (Scale 5.0 5.0) ([(images gstate)!!3])
+            scaledText = map (Scale 2.0 2.0 ) ([(images gstate)!!20])
+            pacPause = translatePacMan (scaledPaccy!!0) (PacMan (14,16) GoRight)
+            pauseText = translateText (scaledText!!0) 0 60
+
+        pictures ([pacPause] ++ [pauseText])
+
 
 
 calculateScore :: GameState -> [Int]
@@ -41,9 +49,10 @@ calculateScore gstate = intToList (score gstate)
             | n < 1000 = [0, n `div` 100, (n `div` 10) `mod` 10,n `mod` 10]
             | otherwise = [n `div` 1000, (n `div` 100) `mod` 10, (n `div` 10) `mod` 10, n `mod` 10]
          
+     
 
-translateScoreText :: Picture -> Picture
-translateScoreText pict = translate (-60) (270) pict
+translateText :: Picture ->Float -> Float -> Picture
+translateText pict xoffset yoffset = translate (xoffset) (yoffset) pict
 
 translateScore :: Picture -> Float -> Picture
 translateScore pict offset = translate (-10 + offset) (270) pict

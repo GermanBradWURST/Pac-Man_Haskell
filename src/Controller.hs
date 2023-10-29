@@ -34,24 +34,23 @@ iRNG = mkStdGen 2231542
 -- | Handle one iteration of the game
 step :: Float -> GameState -> IO GameState
 step secs gstate
-  = do
+    | (viewState gstate) == Running = do
+        let isFrightened = checkGhostFrightened (ghosts gstate)
 
-    let isFrightened = checkGhostFrightened (ghosts gstate)
-
-    let pman = stepPacMan gstate
-    let glist = map (stepGhost gstate) (ghosts gstate)
-    let pelletmaze = [[eatPellet tile pman | tile <- row] | row <- maze gstate] -- checking if the current pacman is eating a pellet
-    let newmaze = [[eatSuperPellet tile pman | tile <- row] | row <- pelletmaze] -- checking if the current pacman is eating a super pellet
-    let newScore = 10  * (260 - (calculateScore (concat(maze gstate))))
-    let ghostsMode = changeGhostMode (ghostTimer gstate) isFrightened (scoreChange (score gstate) newScore) (glist)
-    let newlives = lives (checkCollission pman ghostsMode gstate)
-    let newGhostTimer = upDateGhostTime isFrightened (ghostTimer gstate) secs
-    --putStrLn (show (mode (ghostsMode!!0)))
-    --putStrLn (show (gTimer (ghostsMode!!0)))
-    --putStrLn (show (gpoint (ghostsMode!!0)))
-    putStrLn (show (lives gstate))
-        
-    return $ gstate { elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = ghostsMode, score = newScore, ghostTimer = newGhostTimer, lives = newlives}
+        let pman = stepPacMan gstate
+        let glist = map (stepGhost gstate) (ghosts gstate)
+        let pelletmaze = [[eatPellet tile pman | tile <- row] | row <- maze gstate] -- checking if the current pacman is eating a pellet
+        let newmaze = [[eatSuperPellet tile pman | tile <- row] | row <- pelletmaze] -- checking if the current pacman is eating a super pellet
+        let newScore = 10  * (260 - (calculateScore (concat(maze gstate))))
+        let ghostsMode = changeGhostMode (ghostTimer gstate) isFrightened (scoreChange (score gstate) newScore) (glist)
+        let newlives = lives (checkCollission pman ghostsMode gstate)
+        let newGhostTimer = upDateGhostTime isFrightened (ghostTimer gstate) secs
+        --putStrLn (show (mode (ghostsMode!!0)))
+        putStrLn (show (viewState gstate))
+        return $ gstate {  elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = ghostsMode, score = newScore, ghostTimer = newGhostTimer, lives = newlives}
+    | (viewState gstate) == Paused = do
+        return $ gstate
+    | otherwise = return $ gstate
 
 stepPacMan :: GameState -> PacMan
 stepPacMan gstate | checkWrap (point (pacman gstate)) (direction (pacman gstate)) = wrapAroundPacMan (pacman gstate)
@@ -137,16 +136,25 @@ toChase g = g {mode = Chase, gTimer = 1 }
 
 -- | Handle user input
 input :: Event -> GameState -> IO GameState
-input e gstate = return (inputKey e (pacman gstate) gstate)
+input e gstate = return (inputKey e  gstate)
 
 
-inputKey :: Event -> PacMan -> GameState -> GameState
-inputKey (EventKey (Char c) _ _ _) (PacMan (x,y) d) gstate  -- If the user presses a character key, show that one
-    |c == 's' && c /= lastPressed gstate = changeDirection GoDown gstate
-    |c == 'w' && c /= lastPressed gstate = changeDirection GoUp gstate
-    |c == 'a' && c /= lastPressed gstate = changeDirection GoLeft gstate
-    |c == 'd' && c /= lastPressed gstate = changeDirection GoRight gstate
-inputKey _ _ gstate = gstate -- Otherwise keep the same
+inputKey :: Event -> GameState -> GameState
+inputKey (EventKey (Char c) Down _ _) gstate
+    | c == 's' && c /= lastPressed gstate && (viewState gstate) /= Paused = changeDirection GoDown gstate
+    | c == 'w' && c /= lastPressed gstate && (viewState gstate) /= Paused  = changeDirection GoUp gstate
+    | c == 'a' && c /= lastPressed gstate && (viewState gstate) /= Paused  = changeDirection GoLeft gstate
+    | c == 'd' && c /= lastPressed gstate && (viewState gstate) /= Paused  = changeDirection GoRight gstate
+    | c == 'p' = pauseGame gstate (lastPressed gstate) c
+inputKey _ gstate = gstate
+
+
+
+pauseGame :: GameState -> Char -> Char -> GameState
+pauseGame gstate lastP c
+    | c == 'p' && lastP == 'p' = gstate {viewState = Running, lastPressed = 'p'}
+    | c=='p' && lastP /= 'p' = gstate {viewState = Paused, lastPressed = 'p'}
+    |otherwise = gstate
 
 
 makeRound :: Float -> Float
