@@ -86,18 +86,27 @@ scoreChange oldscore newscore = abs (oldscore - newscore) > 10
 
 checkCollission :: PacMan -> [Ghost] -> GameState -> GameState
 checkCollission pman [] gstate = gstate
-checkCollission pman (x:xs) gstate = 
-        if  (px, py) ==  (gpoint x)  && (mode x) /= Frightened then gstate {lives = decreaseLive}
-        else checkCollission pman xs gstate
+checkCollission pman (x:xs) gstate
+    | isClose (px, py) (gpoint x) 0.25 && (mode x) /= Frightened = loseLife gstate
+    | isClose (px, py) (gpoint x) 0.25 && (mode x) == Frightened = toCage x gstate
+    | otherwise = checkCollission pman xs gstate
             where
                 (PacMan (px, py) pd) = pman
-                decreaseLive = if (lives gstate) > 0 then (lives gstate) - 1 else (lives gstate)
+                
 
 
+loseLife :: GameState -> GameState
+loseLife gstate = gstate {pacman = (PacMan (14,23) GoRight), ghosts = g, lives = decreaseLive}
+    where
+        blinky = Ghost Blinky Scatter (13, 11) GoRight 1 0.25
+        inky = Ghost Inky Scatter (13, 11) GoRight 1 0.25 -- 13, 14
+        clyde = Ghost Clyde Scatter (13, 11) GoRight 1 0.25 -- 14, 14
+        pinky = Ghost Pinky Scatter (13, 11) GoRight 1 0.25 -- 13, 13
+        g = [blinky, inky, pinky, clyde]
+        decreaseLive = if (lives gstate) > 0 then (lives gstate) - 1 else (lives gstate)
 
-
-
-
+toCage :: Ghost -> GameState -> GameState
+toCage (Ghost t m (x,y) d gtime s) gstate = gstate
 
 upDateGhostTime :: Bool -> Float -> Float -> Float
 upDateGhostTime b f secs | not b = f + secs
