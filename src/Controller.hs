@@ -20,8 +20,8 @@ searchMaze m (x, y) = (m!!inty)!!intx
 
 --Checks for wrap around
 checkWrap :: (Float, Float) -> Direction -> Bool
-checkWrap p d  | p == (0,14) && d == GoLeft = True
-               | p == (27, 14) && d == GoRight = True
+checkWrap p d  | isClose p (0,14) 0.1 && d == GoLeft = True
+               | isClose p (27, 14) 0.1 && d == GoRight = True
                | otherwise = False
                    
 
@@ -36,7 +36,6 @@ step :: Float -> GameState -> IO GameState
 step secs gstate
     | (viewState gstate) == Running = do
         let isFrightened = checkGhostFrightened (ghosts gstate)
-
         let pman = stepPacMan gstate
         let glist = map (stepGhost gstate) (ghosts gstate)
         let pelletmaze = [[eatPellet tile pman | tile <- row] | row <- maze gstate] -- checking if the current pacman is eating a pellet
@@ -47,8 +46,11 @@ step secs gstate
         let newGhostTimer = upDateGhostTime isFrightened (ghostTimer gstate) secs
         let possibleGameOver = viewState (gameOver gstate)
         --putStrLn (show (mode (ghostsMode!!0)))
-        putStrLn (show (viewState gstate))
-        return $ gstate { viewState = possibleGameOver, elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = ghostsMode, score = newScore, ghostTimer = newGhostTimer, lives = newlives}
+        --putStrLn (show (viewState gstate))
+        -- putStrLn (show (lives gstate))
+        if newlives < lives gstate
+            then return $ resetGame gstate
+            else return $ gstate { viewState = possibleGameOver, elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = ghostsMode, score = newScore, ghostTimer = newGhostTimer, lives = newlives}
     | (viewState gstate) == Paused = do
         return $ gstate
     | otherwise = return $ gstate
@@ -96,17 +98,26 @@ checkCollission pman (x:xs) gstate
 
 
 loseLife :: GameState -> GameState
-loseLife gstate = gstate {pacman = (PacMan (14,23) GoRight), ghosts = g, lives = decreaseLive}
+loseLife gstate = gstate {lives = decreaseLive}
     where
-        blinky = Ghost Blinky Scatter (13, 11) GoRight 1 0.25
-        inky = Ghost Inky Scatter (13, 11) GoRight 1 0.25 -- 13, 14
-        clyde = Ghost Clyde Scatter (13, 11) GoRight 1 0.25 -- 14, 14
-        pinky = Ghost Pinky Scatter (13, 11) GoRight 1 0.25 -- 13, 13
-        g = [blinky, inky, pinky, clyde]
         decreaseLive = if (lives gstate) > 0 then (lives gstate) - 1 else (lives gstate)
+        
 
 toCage :: Ghost -> GameState -> GameState
 toCage (Ghost t m (x,y) d gtime s) gstate = gstate
+
+-- resets the positions of pacman and the ghosts if pacman loses a life
+resetGame :: GameState -> GameState
+resetGame gstate = gstate { pacman = initialPacMan, ghosts = initialGhosts, lives = decreaseLife}
+    where
+        blinky = Ghost Blinky Scatter (13, 11) GoRight 1 0.25
+        inky = Ghost Inky Scatter (13, 11) GoRight 1 0.25
+        clyde = Ghost Clyde Scatter (13, 11) GoRight 1 0.25
+        pinky = Ghost Pinky Scatter (13, 11) GoRight 1 0.25
+        initialPacMan = PacMan (14, 23) GoRight
+        initialGhosts = [blinky, inky, pinky, clyde]
+        decreaseLife = if (lives gstate) > 0 then (lives gstate) - 1 else (lives gstate)
+
 
 upDateGhostTime :: Bool -> Float -> Float -> Float
 upDateGhostTime b f secs | not b = f + secs
