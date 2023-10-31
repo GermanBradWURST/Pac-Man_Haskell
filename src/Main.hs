@@ -66,5 +66,6 @@ loadImages = do
 
     pausedbmp <- loadBMP "src/sprites/Paused.bmp"
     gameOver <- loadBMP "src/sprites/GameOver.bmp"
+    ready <- loadBMP "src/sprites/Ready.bmp"
 
-    return [bgbmp, pelletbmp, powerupbmp, pacmanbmp, blinkybmp, inkybmp, clydebmp, pinkybmp, scorebmp, nmr0bmp, nmr1bmp, nmr2bmp, nmr3bmp, nmr4bmp, nmr5bmp, nmr6bmp, nmr7bmp, nmr8bmp, nmr9bmp, frightghost, pausedbmp, gameOver]
+    return [bgbmp, pelletbmp, powerupbmp, pacmanbmp, blinkybmp, inkybmp, clydebmp, pinkybmp, scorebmp, nmr0bmp, nmr1bmp, nmr2bmp, nmr3bmp, nmr4bmp, nmr5bmp, nmr6bmp, nmr7bmp, nmr8bmp, nmr9bmp, frightghost, pausedbmp, gameOver, ready]

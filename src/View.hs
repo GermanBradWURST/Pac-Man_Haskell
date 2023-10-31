@@ -51,8 +51,14 @@ viewPure gstate = case viewState gstate of
             glist = [translatePicture (scaledlist!!4) (13.5, 11), translatePicture (scaledlist!!5) (11.5, 14), translatePicture (scaledlist!!6) (13.5, 14), translatePicture (scaledlist!!7) (15.5, 14)]
             pellets = map (translatePellet (scaledlist!!1)) (pelletList (concat (maze gstate)))
             superPellets = map (translatePellet (scaledlist!!2)) (superPelletList (concat (maze gstate)))
+            scoreList = drop 9 (images gstate)
+            scoreText = [translateText ((images gstate)!! 8) (-60) 270 ]
+            score = [translateScore (scoreList!!(intList!!0)) 10 270 , translateScore (scoreList!!(intList!!1)) 25 270, translateScore (scoreList!!(intList!!2)) 40 270, translateScore (scoreList!!(intList!!3)) 55 270 ]  
+                where 
+                    intList = calculateScore gstate
+            pacmanlives = translatePacmanLives (scaledlist!!3) (amountToListLives (lives gstate))
 
-        pictures ([head scaledlist, translatePicture (scaledlist!!3) (13.5, 23), translatePicture (scaledlist!!3) (13.5, 17)] ++ glist ++ pellets ++ superPellets)
+        pictures ([head scaledlist, translatePicture (scaledlist!!3) (13.5, 23), translatePicture (scaledlist!!22) (13.5, 17)] ++ glist ++ pellets ++ superPellets ++ scoreText ++ score ++ pacmanlives)
         
 
 
