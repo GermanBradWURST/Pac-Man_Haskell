@@ -22,9 +22,9 @@ main = do
     images <- loadImages
 
     let blinky = Ghost Blinky Scatter (13, 11) GoRight 1 0.25 0 False
-    let inky = Ghost Inky Scatter (13, 14) GoRight 1 0.25 0 True-- 13, 14
-    let clyde = Ghost Clyde Scatter (13, 14) GoRight 1 0.25 0 True-- 14, 14
-    let pinky = Ghost Pinky Scatter (13, 14) GoRight 1 0.25 0 True-- 13, 13
+    let inky = Ghost Inky Scatter (13, 14) GoRight 1 0.25 0 True
+    let clyde = Ghost Clyde Scatter (13, 14) GoRight 1 0.25 0 True
+    let pinky = Ghost Pinky Scatter (13, 14) GoRight 1 0.25 0 True
     
     let ghosts = [blinky, inky, pinky, clyde]
 

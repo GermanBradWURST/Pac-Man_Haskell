@@ -55,6 +55,8 @@ step secs gstate
             else return $ gstate { viewState = possibleGameOver, elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = possibleEatenGhost, score = newScore, ghostTimer = newGhostTimer, lives = newlives}
     | (viewState gstate) == Paused = do
         return $ gstate
+
+
     | (viewState gstate) == Ready = do
         let lst = lastPressed gstate
             start | lst == 'a' || lst == 's' || lst == 'w' || lst == 'd' = True
@@ -62,6 +64,27 @@ step secs gstate
         if start == True
             then return $ gstate {viewState = Running}
             else return $ gstate
+
+
+    | (viewState gstate) == GameOver = do
+        levelfile <- readFile "src/Level1.txt"
+        let level = lines levelfile
+        let maze = makeMaze level
+        let lst = lastPressed gstate
+        let blinky = Ghost Blinky Scatter (13, 11) GoRight 1 0.25 0 False
+        let inky = Ghost Inky Scatter (13, 14) GoRight 1 0.25 0 True
+        let clyde = Ghost Clyde Scatter (13, 14) GoRight 1 0.25 0 True
+        let pinky = Ghost Pinky Scatter (13, 14) GoRight 1 0.25 0 True
+        let ghosts = [blinky, inky, pinky, clyde]
+        let start | lst == 'c' = True
+                  | otherwise = False
+
+        let initial = Model.initialState initialPacMan (images gstate) maze ghosts
+        if start == True
+            then return $ initial
+            else return $ gstate
+
+
     | otherwise = return $ gstate
 
 stepPacMan :: GameState -> PacMan
@@ -129,7 +152,8 @@ loseLife gstate = gstate {lives = decreaseLive}
 
 -- resets the positions of pacman and the ghosts if pacman loses a life
 resetGame :: GameState -> GameState
-resetGame gstate = gstate { pacman = initialPacMan, ghosts = initialGhosts, lives = decreaseLife}
+resetGame gstate | decreaseLife > 0 = gstate { pacman = initialPacMan, ghosts = initialGhosts, lives = decreaseLife, viewState = Ready, lastPressed = 'n'}
+                 | otherwise = gstate { pacman = initialPacMan, ghosts = initialGhosts, lives = decreaseLife, viewState = GameOver, lastPressed = 'n'}
     where
         blinky = Ghost Blinky Scatter (13, 11) GoRight 1 0.25 0 False
         inky = Ghost Inky Scatter (13, 14) GoRight 1 0.25 0 True
@@ -196,6 +220,7 @@ inputKey (EventKey (Char c) Down _ _) gstate
     | c == 'a' && c /= lastPressed gstate && (viewState gstate) /= Paused  = changeDirection GoLeft gstate
     | c == 'd' && c /= lastPressed gstate && (viewState gstate) /= Paused  = changeDirection GoRight gstate
     | c == 'p' = pauseGame gstate (lastPressed gstate) c
+    | otherwise = gstate {lastPressed = c}
 inputKey _ gstate = gstate
 
 
