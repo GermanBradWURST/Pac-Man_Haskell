@@ -47,10 +47,7 @@ step secs gstate
         let newGhostTimer = upDateGhostTime isFrightened (ghostTimer gstate) secs
         let possibleGameOver = viewState (gameOver gstate)
         let possibleEatenGhost = map (collisionPacmanGhost pman gstate) (ghostsMode) 
-        --putStrLn (show (mode (ghostsMode!!0)))
-        --putStrLn (show (viewState gstate))
-        -- putStrLn (show (lives gstate))
-        putStrLn (show (elapsedTime gstate))
+        
         if newlives < lives gstate
             then return $ resetGame gstate
             else return $ gstate { viewState = possibleGameOver, elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = possibleEatenGhost, score = newScore, ghostTimer = newGhostTimer, lives = newlives}
