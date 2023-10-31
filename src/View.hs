@@ -16,7 +16,8 @@ viewPure gstate = case viewState gstate of
     Running -> do
         let scaledlist = map (Scale 2.0 2.0) (images gstate)
             scoreList = drop 9 (images gstate)
-            pacpic = translatePacMan (scaledlist!!3) (pacman gstate)
+            -- pacpic = if ((elapsedTime gstate) % 2) == 0 then translatePacMan (scaledlist!!3) (pacman gstate) else  translatePacMan (scaledlist!!22) (pacman gstate)
+            pacpic = translatePacMan (scaledlist!!3) (pacman gstate) 
             blinky = if (mode ((ghosts gstate)!!0)) /= Frightened then translateGhost (scaledlist!!4) ((ghosts gstate)!!0) else translateGhost (scaledlist!!19) ((ghosts gstate)!!0)
             inky = if (mode ((ghosts gstate)!!1)) /= Frightened then translateGhost (scaledlist!!5) ((ghosts gstate)!!1) else translateGhost (scaledlist!!19) ((ghosts gstate)!!1)
             pinky = if (mode ((ghosts gstate)!!2)) /= Frightened then translateGhost (scaledlist!!7) ((ghosts gstate)!!2) else translateGhost (scaledlist!!19) ((ghosts gstate)!!2)
