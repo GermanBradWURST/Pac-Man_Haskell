@@ -32,7 +32,7 @@ main = do
 
     playIO (InWindow "PacMan" (448, 580) (0, 0))
              black
-             28
+             23
              initialstate
              view
              input
@@ -67,4 +67,9 @@ loadImages = do
     pausedbmp <- loadBMP "src/sprites/Paused.bmp"
     gameOver <- loadBMP "src/sprites/GameOver.bmp"
 
-    return [bgbmp, pelletbmp, powerupbmp, pacmanbmp, blinkybmp, inkybmp, clydebmp, pinkybmp, scorebmp, nmr0bmp, nmr1bmp, nmr2bmp, nmr3bmp, nmr4bmp, nmr5bmp, nmr6bmp, nmr7bmp, nmr8bmp, nmr9bmp, frightghost, pausedbmp, gameOver]
+    eatingpac2 <- loadBMP "src/sprites/EatingPac2.bmp"
+    eatingpac3 <- loadBMP "src/sprites/EatingPac3.bmp"
+
+    return [bgbmp, pelletbmp, powerupbmp, pacmanbmp, blinkybmp, inkybmp, clydebmp, pinkybmp, 
+            scorebmp, nmr0bmp, nmr1bmp, nmr2bmp, nmr3bmp, nmr4bmp, nmr5bmp, nmr6bmp, nmr7bmp, 
+            nmr8bmp, nmr9bmp, frightghost, pausedbmp, gameOver, eatingpac2, eatingpac3]
