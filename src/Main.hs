@@ -81,8 +81,9 @@ loadImages = do
     dying8bmp <- loadBMP "src/sprites/dying8.bmp"
     dying9bmp <- loadBMP "src/sprites/dying9.bmp"
     dying10bmp <- loadBMP "src/sprites/dying10.bmp"
+    dying11bmp <- loadBMP "src/sprites/dying11.bmp"
 
     return [bgbmp, pelletbmp, powerupbmp, pacmanbmp, blinkybmp, inkybmp, clydebmp, 
             pinkybmp, scorebmp, nmr0bmp, nmr1bmp, nmr2bmp, nmr3bmp, nmr4bmp, nmr5bmp, 
             nmr6bmp, nmr7bmp, nmr8bmp, nmr9bmp, frightghost, pausedbmp, gameOver, ready, 
-            eatingpac2, eatingpac3, dying0bmp,dying1bmp,dying2bmp,dying3bmp,dying4bmp,dying5bmp,dying6bmp,dying7bmp,dying8bmp,dying9bmp,dying10bmp]
+            eatingpac2, eatingpac3, dying0bmp,dying1bmp,dying2bmp,dying11bmp,dying3bmp,dying4bmp,dying5bmp,dying6bmp,dying7bmp,dying8bmp,dying9bmp,dying10bmp]
