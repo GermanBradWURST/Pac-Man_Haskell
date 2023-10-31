@@ -84,10 +84,10 @@ step secs gstate
 
     | viewState gstate == Dying = do
         let newCounter = deadCounter gstate + 1
+        let initial = PacMan (14, 23) GoRight
         if newCounter < 120
                 then return $ gstate {deadCounter = newCounter}
-                else return $ gstate {deadCounter = 0, viewState = Ready}
-
+                else return $ gstate {deadCounter = 0, viewState = Ready, pacman = initial}
     | otherwise = return $ gstate
 
 stepPacMan :: GameState -> PacMan
@@ -155,14 +155,13 @@ loseLife gstate = gstate {lives = decreaseLive}
 
 -- resets the positions of pacman and the ghosts if pacman loses a life
 resetGame :: GameState -> GameState
-resetGame gstate | decreaseLife > 0 = gstate { pacman = initialPacMan, ghosts = initialGhosts, lives = decreaseLife, viewState = Dying, lastPressed = 'n'}
-                 | otherwise = gstate { pacman = initialPacMan, ghosts = initialGhosts, lives = decreaseLife, viewState = GameOver, lastPressed = 'n'}
+resetGame gstate | decreaseLife > 0 = gstate { ghosts = initialGhosts, lives = decreaseLife, viewState = Dying, lastPressed = 'n'}
+                 | otherwise = gstate { ghosts = initialGhosts, lives = decreaseLife, viewState = GameOver, lastPressed = 'n'}
     where
         blinky = Ghost Blinky Scatter (13, 11) GoRight 1 0.25 0 False
         inky = Ghost Inky Scatter (13, 14) GoRight 1 0.25 0 True
         clyde = Ghost Clyde Scatter (13, 14) GoRight 1 0.25 0 True
         pinky = Ghost Pinky Scatter (13, 14) GoRight 1 0.25 0 True
-        initialPacMan = PacMan (14, 23) GoRight
         initialGhosts = [blinky, inky, pinky, clyde]
         decreaseLife = if (lives gstate) > 0 then (lives gstate) - 1 else (lives gstate)
 

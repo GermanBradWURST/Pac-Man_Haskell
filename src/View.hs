@@ -72,6 +72,7 @@ viewPure gstate = case viewState gstate of
             timer = deadCounter gstate
             currentIndex | timer > 103 = 11
                          | timer > 70 = floor ( fromIntegral(timer - 70) / 3.0)
+                         | otherwise = 0
             pacpic = translatePacMan (dyingList!!currentIndex) (pacman gstate)
             pellets = map (translatePellet (scaledlist!!1)) (pelletList (concat (maze gstate)))
             superPellets = map (translatePellet (scaledlist!!2)) (superPelletList (concat (maze gstate)))
