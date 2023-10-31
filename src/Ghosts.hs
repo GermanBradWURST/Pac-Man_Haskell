@@ -13,6 +13,8 @@ data Ghost = Ghost {
     , gdirection :: Loadlevel.Direction
     , gTimer :: Int
     , speed :: Float
+    , turnTimer :: Int
+    , inHouse :: Bool
 }
 
 wrapAroundGhost :: Ghost -> Ghost
