@@ -56,6 +56,13 @@ step secs gstate
             else return $ gstate { viewState = possibleGameOver, elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = possibleEatenGhost, score = newScore, ghostTimer = newGhostTimer, lives = newlives}
     | (viewState gstate) == Paused = do
         return $ gstate
+    | (viewState gstate) == Ready = do
+        let lst = lastPressed gstate
+            start | lst == 'a' || lst == 's' || lst == 'w' || lst == 'd' = True
+                  | otherwise = False
+        if start == True
+            then return $ gstate {viewState = Running}
+            else return $ gstate
     | otherwise = return $ gstate
 
 stepPacMan :: GameState -> PacMan
@@ -92,7 +99,7 @@ scoreChange oldscore newscore = abs (oldscore - newscore) > 10
 collisionGhostPacman :: PacMan -> [Ghost] -> GameState -> GameState
 collisionGhostPacman pman [] gstate = gstate
 collisionGhostPacman pman (x:xs) gstate
-    | isClose (px, py) (gpoint x) 0.25 && (mode x) /= Frightened = loseLife gstate
+    | isClose (px, py) (gpoint x) 0.50 && (mode x) /= Frightened = loseLife gstate
     | otherwise = collisionGhostPacman pman xs gstate
             where
                 (PacMan (px, py) pd) = pman
@@ -120,8 +127,6 @@ loseLife gstate = gstate {lives = decreaseLive}
         decreaseLive = if (lives gstate) > 0 then (lives gstate) - 1 else (lives gstate)
         
 
-toCage :: Ghost -> GameState -> GameState
-toCage (Ghost t m (x,y) d gtime s tt b) gstate = gstate
 
 -- resets the positions of pacman and the ghosts if pacman loses a life
 resetGame :: GameState -> GameState

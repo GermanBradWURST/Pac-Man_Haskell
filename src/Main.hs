@@ -32,7 +32,7 @@ main = do
 
     playIO (InWindow "PacMan" (448, 580) (0, 0))
              black
-             23
+             24
              initialstate
              view
              input
