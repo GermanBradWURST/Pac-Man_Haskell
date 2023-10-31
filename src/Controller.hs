@@ -42,15 +42,16 @@ step secs gstate
         let newmaze = [[eatSuperPellet tile pman | tile <- row] | row <- pelletmaze] -- checking if the current pacman is eating a super pellet
         let newScore = 10  * (260 - (calculateScore (concat(maze gstate))))
         let ghostsMode = changeGhostMode (ghostTimer gstate) isFrightened (scoreChange (score gstate) newScore) (glist)
-        let newlives = lives (checkCollission pman ghostsMode gstate)
+        let newlives = lives (collisionGhostPacman pman ghostsMode gstate)
         let newGhostTimer = upDateGhostTime isFrightened (ghostTimer gstate) secs
         let possibleGameOver = viewState (gameOver gstate)
+        let possibleEatenGhost = map (collisionPacmanGhost pman gstate) (ghostsMode) 
         --putStrLn (show (mode (ghostsMode!!0)))
         --putStrLn (show (viewState gstate))
         -- putStrLn (show (lives gstate))
         if newlives < lives gstate
             then return $ resetGame gstate
-            else return $ gstate { viewState = possibleGameOver, elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = ghostsMode, score = newScore, ghostTimer = newGhostTimer, lives = newlives}
+            else return $ gstate { viewState = possibleGameOver, elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = possibleEatenGhost, score = newScore, ghostTimer = newGhostTimer, lives = newlives}
     | (viewState gstate) == Paused = do
         return $ gstate
     | otherwise = return $ gstate
@@ -86,16 +87,30 @@ calculateScore tiles  = (length (pelletList tiles))  + (5 * (length (superPellet
 scoreChange :: Int -> Int -> Bool
 scoreChange oldscore newscore = abs (oldscore - newscore) > 10 
 
-checkCollission :: PacMan -> [Ghost] -> GameState -> GameState
-checkCollission pman [] gstate = gstate
-checkCollission pman (x:xs) gstate
+collisionGhostPacman :: PacMan -> [Ghost] -> GameState -> GameState
+collisionGhostPacman pman [] gstate = gstate
+collisionGhostPacman pman (x:xs) gstate
     | isClose (px, py) (gpoint x) 0.25 && (mode x) /= Frightened = loseLife gstate
-    | isClose (px, py) (gpoint x) 0.25 && (mode x) == Frightened = toCage x gstate
-    | otherwise = checkCollission pman xs gstate
+    | otherwise = collisionGhostPacman pman xs gstate
             where
                 (PacMan (px, py) pd) = pman
-                
 
+collisionPacmanGhost :: PacMan -> GameState -> Ghost -> Ghost
+collisionPacmanGhost pman gstate g= if isClose (point pman) (gpoint g) 0.1 then toChase ( g {gpoint = (13,11), gTimer = 0} )else g
+    where 
+        newScore = eatingGhosts (ghosts gstate)
+        
+                
+eatingGhosts :: [Ghost] -> Int
+eatingGhosts [] = 0
+eatingGhosts (x:xs)
+    | (mode x) /= Frightened = calcEatGhostPoints (incr + 1) + eatingGhosts xs
+    | otherwise = eatingGhosts xs
+    where
+        incr = 0
+
+calcEatGhostPoints :: Int -> Int
+calcEatGhostPoints i = 200 * (2^i)
 
 loseLife :: GameState -> GameState
 loseLife gstate = gstate {lives = decreaseLive}
