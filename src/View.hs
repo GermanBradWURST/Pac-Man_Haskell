@@ -16,7 +16,6 @@ viewPure gstate = case viewState gstate of
     Running -> do
         let scaledlist = map (Scale 2.0 2.0) (images gstate)
             scoreList = map (Scale 2.0 2.0) (drop 9 (images gstate))
-            -- pacpic = if ((elapsedTime gstate) % 2) == 0 then translatePacMan (scaledlist!!3) (pacman gstate) else  translatePacMan (scaledlist!!22) (pacman gstate)
             frame = (toInt ((elapsedTime gstate) * 24)) `mod` 8
             pacpic
                 | frame `elem` [0, 1, 2] = translatePacMan (scaledlist !! 3) (pacman gstate)  -- Closed mouth
