@@ -52,21 +52,24 @@ loadImages = do
     pinkybmp <- loadBMP "src/sprites/Pinky.bmp"
     frightghost <- loadBMP "src/sprites/frightGhost.bmp"
 
-    scorebmp <- loadBMP "src/sprites/SCORE.bmp"
-    nmr1bmp <- loadBMP "src/sprites/nmr1.bmp"
-    nmr2bmp <- loadBMP "src/sprites/nmr2.bmp"
-    nmr3bmp <- loadBMP "src/sprites/nmr3.bmp"
-    nmr4bmp <- loadBMP "src/sprites/nmr4.bmp"
-    nmr5bmp <- loadBMP "src/sprites/nmr5.bmp"
-    nmr6bmp <- loadBMP "src/sprites/nmr6.bmp"
-    nmr7bmp <- loadBMP "src/sprites/nmr7.bmp"
-    nmr8bmp <- loadBMP "src/sprites/nmr8.bmp"
-    nmr9bmp <- loadBMP "src/sprites/nmr9.bmp"
-    nmr0bmp <- loadBMP "src/sprites/nmr0.bmp"
+    scorebmp <- loadBMP "src/sprites/Score.bmp"
+    nmr1bmp <- loadBMP "src/sprites/1.bmp"
+    nmr2bmp <- loadBMP "src/sprites/2.bmp"
+    nmr3bmp <- loadBMP "src/sprites/3.bmp"
+    nmr4bmp <- loadBMP "src/sprites/4.bmp"
+    nmr5bmp <- loadBMP "src/sprites/5.bmp"
+    nmr6bmp <- loadBMP "src/sprites/6.bmp"
+    nmr7bmp <- loadBMP "src/sprites/7.bmp"
+    nmr8bmp <- loadBMP "src/sprites/8.bmp"
+    nmr9bmp <- loadBMP "src/sprites/9.bmp"
+    nmr0bmp <- loadBMP "src/sprites/0.bmp"
     eatingpac2 <- loadBMP "src/sprites/EatingPac2.bmp"
     eatingpac3 <- loadBMP "src/sprites/EatingPac3.bmp"
     pausedbmp <- loadBMP "src/sprites/Paused.bmp"
     gameOver <- loadBMP "src/sprites/GameOver.bmp"
     ready <- loadBMP "src/sprites/Ready.bmp"
 
-    return [bgbmp, pelletbmp, powerupbmp, pacmanbmp, blinkybmp, inkybmp, clydebmp, pinkybmp, scorebmp, nmr0bmp, nmr1bmp, nmr2bmp, nmr3bmp, nmr4bmp, nmr5bmp, nmr6bmp, nmr7bmp, nmr8bmp, nmr9bmp, frightghost, pausedbmp, gameOver, ready, eatingpac2, eatingpac3]
+    return [bgbmp, pelletbmp, powerupbmp, pacmanbmp, blinkybmp, inkybmp, clydebmp, 
+            pinkybmp, scorebmp, nmr0bmp, nmr1bmp, nmr2bmp, nmr3bmp, nmr4bmp, nmr5bmp, 
+            nmr6bmp, nmr7bmp, nmr8bmp, nmr9bmp, frightghost, pausedbmp, gameOver, ready, 
+            eatingpac2, eatingpac3]

@@ -15,21 +15,25 @@ viewPure :: GameState -> Picture
 viewPure gstate = case viewState gstate of
     Running -> do
         let scaledlist = map (Scale 2.0 2.0) (images gstate)
-            scoreList = drop 9 (images gstate)
+            scoreList = map (Scale 2.0 2.0) (drop 9 (images gstate))
             -- pacpic = if ((elapsedTime gstate) % 2) == 0 then translatePacMan (scaledlist!!3) (pacman gstate) else  translatePacMan (scaledlist!!22) (pacman gstate)
-            pacpic = translatePacMan (scaledlist!!3) (pacman gstate) 
+            frame = (toInt ((elapsedTime gstate) * 24)) `mod` 8
+            pacpic
+                | frame `elem` [0, 1, 2] = translatePacMan (scaledlist !! 3) (pacman gstate)  -- Closed mouth
+                | frame `elem` [3, 4, 5] = translatePacMan (scaledlist !! 24) (pacman gstate) -- Open mouth
+                | otherwise = translatePacMan (scaledlist !! 23) (pacman gstate)              -- Closed mouth (default)
             blinky = if (mode ((ghosts gstate)!!0)) /= Frightened then translateGhost (scaledlist!!4) ((ghosts gstate)!!0) else translateGhost (scaledlist!!19) ((ghosts gstate)!!0)
             inky = if (mode ((ghosts gstate)!!1)) /= Frightened then translateGhost (scaledlist!!5) ((ghosts gstate)!!1) else translateGhost (scaledlist!!19) ((ghosts gstate)!!1)
             pinky = if (mode ((ghosts gstate)!!2)) /= Frightened then translateGhost (scaledlist!!7) ((ghosts gstate)!!2) else translateGhost (scaledlist!!19) ((ghosts gstate)!!2)
             clyde = if (mode((ghosts gstate)!!3)) /= Frightened then translateGhost (scaledlist!!6) ((ghosts gstate)!!3) else translateGhost (scaledlist!!19) ((ghosts gstate)!!3)
             pellets = map (translatePellet (scaledlist!!1)) (pelletList (concat (maze gstate)))
             superPellets = map (translatePellet (scaledlist!!2)) (superPelletList (concat (maze gstate)))
-            scoreText = [translateText ((images gstate)!! 8) (-60) 270 ]
+            scoreText = [translateText (scaledlist!! 8) (-60) 270 ]
             pacmanlives = translatePacmanLives (scaledlist!!3) (amountToListLives (lives gstate))
             score = [translateScore (scoreList!!(intList!!0)) 10 270 , translateScore (scoreList!!(intList!!1)) 25 270, translateScore (scoreList!!(intList!!2)) 40 270, translateScore (scoreList!!(intList!!3)) 55 270 ]  
                 where 
                     intList = calculateScore gstate
-        pictures ([scaledlist!!0] ++ pellets ++ superPellets ++ [pacpic, blinky, inky, pinky, clyde] ++ scoreText ++ score ++ pacmanlives)
+        pictures (score ++ [scaledlist!!0] ++ pellets ++ superPellets ++ [pacpic, blinky, inky, pinky, clyde] ++ scoreText ++ pacmanlives)
     Paused -> do
         let scaledPaccy =  map (Scale 5.0 5.0) ([(images gstate)!!3])
             scaledText = map (Scale 2.0 2.0 ) ([(images gstate)!!20])
@@ -41,8 +45,8 @@ viewPure gstate = case viewState gstate of
         let scaledText = map (Scale 2.0 2.0) ([(images gstate)!!21] ++ [(images gstate)!!8])
             scoreList = map (Scale 2.0 2.0 ) (drop 9 (images gstate))
             gameover = translateText (scaledText!!0) 0 (20)
-            scoreText = [translateText ((images gstate)!! 8) (-80) (-50) ]
-            score = [translateScore (scoreList!!(intList!!0)) 10 (-50) , translateScore (scoreList!!(intList!!1)) 45 (-50), translateScore (scoreList!!(intList!!2)) 80 (-50), translateScore (scoreList!!(intList!!3)) 115 (-50) ]
+            scoreText = [translateText (scaledText!!1) (-80) (-50) ]
+            score = [translateScore (scoreList!!(intList!!0)) 10 (-50) , translateScore (scoreList!!(intList!!1)) 35 (-50), translateScore (scoreList!!(intList!!2)) 30 (-50), translateScore (scoreList!!(intList!!3)) 45 (-50) ]
                 where 
                     intList = calculateScore gstate 
         pictures ([gameover]++score++scoreText)
@@ -52,8 +56,8 @@ viewPure gstate = case viewState gstate of
             glist = [translatePicture (scaledlist!!4) (13.5, 11), translatePicture (scaledlist!!5) (11.5, 14), translatePicture (scaledlist!!6) (13.5, 14), translatePicture (scaledlist!!7) (15.5, 14)]
             pellets = map (translatePellet (scaledlist!!1)) (pelletList (concat (maze gstate)))
             superPellets = map (translatePellet (scaledlist!!2)) (superPelletList (concat (maze gstate)))
-            scoreList = drop 9 (images gstate)
-            scoreText = [translateText ((images gstate)!! 8) (-60) 270 ]
+            scoreList = map (Scale 2.0 2.0) (drop 9 (images gstate))
+            scoreText = [translateText (scaledlist!! 8) (-60) 270 ]
             score = [translateScore (scoreList!!(intList!!0)) 10 270 , translateScore (scoreList!!(intList!!1)) 25 270, translateScore (scoreList!!(intList!!2)) 40 270, translateScore (scoreList!!(intList!!3)) 55 270 ]  
                 where 
                     intList = calculateScore gstate
@@ -75,6 +79,9 @@ calculateScore gstate = intToList (score gstate)
             | otherwise = [n `div` 1000, (n `div` 100) `mod` 10, (n `div` 10) `mod` 10, n `mod` 10]
          
      
+toInt :: Float -> Int 
+toInt f = round f
+
 
 translateText :: Picture -> Float -> Float -> Picture
 translateText pict xoffset yoffset = translate (xoffset) (yoffset) pict
