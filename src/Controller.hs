@@ -50,6 +50,7 @@ step secs gstate
         --putStrLn (show (mode (ghostsMode!!0)))
         --putStrLn (show (viewState gstate))
         -- putStrLn (show (lives gstate))
+        putStrLn (show (elapsedTime gstate))
         if newlives < lives gstate
             then return $ resetGame gstate
             else return $ gstate { viewState = possibleGameOver, elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = possibleEatenGhost, score = newScore, ghostTimer = newGhostTimer, lives = newlives}
@@ -97,7 +98,7 @@ collisionGhostPacman pman (x:xs) gstate
                 (PacMan (px, py) pd) = pman
 
 collisionPacmanGhost :: PacMan -> GameState -> Ghost -> Ghost
-collisionPacmanGhost pman gstate g= if isClose (point pman) (gpoint g) 0.1 then toChase ( g {gpoint = (13,11), gTimer = 0} )else g
+collisionPacmanGhost pman gstate g= if isClose (point pman) (gpoint g) 0.25 then toChase ( g {gpoint = (13,11), gTimer = 0} )else g
     where 
         newScore = eatingGhosts (ghosts gstate)
         
@@ -124,7 +125,7 @@ toCage (Ghost t m (x,y) d gtime s tt b) gstate = gstate
 
 -- resets the positions of pacman and the ghosts if pacman loses a life
 resetGame :: GameState -> GameState
-resetGame gstate = gstate { pacman = initialPacMan, ghosts = initialGhosts, lives = decreaseLife}
+resetGame gstate = gstate { pacman = initialPacMan, ghosts = initialGhosts, lives = decreaseLife, lastPressed = 'd'}
     where
         blinky = Ghost Blinky Scatter (13, 11) GoRight 1 0.25 0 False
         inky = Ghost Inky Scatter (13, 14) GoRight 1 0.25 0 True
@@ -234,6 +235,11 @@ changeDirection direc gstate
 
 toInt :: Float -> Int 
 toInt f = round f
+
+
+--Round a float up to the nearest int if .5 -> not to the nearest even int like normal rounding
+customRound :: Float -> Float
+customRound x = fromIntegral (floor (x + 0.1))
 
 --helper function to check validity of a move
 validMove :: PacMan -> Direction -> Maze -> Bool
