@@ -45,6 +45,14 @@ viewPure gstate = case viewState gstate of
                 where 
                     intList = calculateScore gstate 
         pictures ([gameover]++score++scoreText)
+
+    Ready -> do
+        let scaledlist = map (Scale 2.0 2.0) (images gstate)
+            glist = [translatePicture (scaledlist!!4) (13.5, 11), translatePicture (scaledlist!!5) (11.5, 14), translatePicture (scaledlist!!6) (13.5, 14), translatePicture (scaledlist!!7) (15.5, 14)]
+            pellets = map (translatePellet (scaledlist!!1)) (pelletList (concat (maze gstate)))
+            superPellets = map (translatePellet (scaledlist!!2)) (superPelletList (concat (maze gstate)))
+
+        pictures ([head scaledlist, translatePicture (scaledlist!!3) (13.5, 23), translatePicture (scaledlist!!3) (13.5, 17)] ++ glist ++ pellets ++ superPellets)
         
 
 
@@ -125,4 +133,7 @@ translateGhost pict (Ghost gtype mode (xs, ys) direc time speed tt b) = translat
                     d   | dp == GoLeft = scale (-1) (1) pict
                         | otherwise = pict
 
+
+translatePicture :: Picture -> (Float, Float) -> Picture
+translatePicture pict (x,y) = translate (x*16-216) (240-(y*16)) pict
 
