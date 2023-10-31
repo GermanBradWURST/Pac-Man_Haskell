@@ -69,7 +69,20 @@ loadImages = do
     gameOver <- loadBMP "src/sprites/GameOver.bmp"
     ready <- loadBMP "src/sprites/Ready.bmp"
 
+
+    dying0bmp <- loadBMP "src/sprites/dying0.bmp"
+    dying1bmp <- loadBMP "src/sprites/dying1.bmp"
+    dying2bmp <- loadBMP "src/sprites/dying2.bmp"
+    dying3bmp <- loadBMP "src/sprites/dying3.bmp"
+    dying4bmp <- loadBMP "src/sprites/dying4.bmp"
+    dying5bmp <- loadBMP "src/sprites/dying5.bmp"
+    dying6bmp <- loadBMP "src/sprites/dying6.bmp"
+    dying7bmp <- loadBMP "src/sprites/dying7.bmp"
+    dying8bmp <- loadBMP "src/sprites/dying8.bmp"
+    dying9bmp <- loadBMP "src/sprites/dying9.bmp"
+    dying10bmp <- loadBMP "src/sprites/dying10.bmp"
+
     return [bgbmp, pelletbmp, powerupbmp, pacmanbmp, blinkybmp, inkybmp, clydebmp, 
             pinkybmp, scorebmp, nmr0bmp, nmr1bmp, nmr2bmp, nmr3bmp, nmr4bmp, nmr5bmp, 
             nmr6bmp, nmr7bmp, nmr8bmp, nmr9bmp, frightghost, pausedbmp, gameOver, ready, 
-            eatingpac2, eatingpac3]
+            eatingpac2, eatingpac3, dying0bmp,dying1bmp,dying2bmp,dying3bmp,dying4bmp,dying5bmp,dying6bmp,dying7bmp,dying8bmp,dying9bmp,dying10bmp]
