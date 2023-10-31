@@ -64,6 +64,24 @@ viewPure gstate = case viewState gstate of
             pacmanlives = translatePacmanLives (scaledlist!!3) (amountToListLives (lives gstate))
 
         pictures ([head scaledlist, translatePicture (scaledlist!!3) (13.5, 23), translatePicture (scaledlist!!22) (13.5, 17)] ++ glist ++ pellets ++ superPellets ++ scoreText ++ score ++ pacmanlives)
+
+    Dying -> do
+        let scaledlist = map (Scale 2.0 2.0) (images gstate)
+            scoreList = map (Scale 2.0 2.0) (drop 9 (images gstate))
+            frame = (toInt ((elapsedTime gstate) * 24)) `mod` 8
+            dyingList = drop 25 scaledlist
+            timer = deadCounter gstate
+            currentIndex | timer > 103 = 11
+                         | timer > 70 = floor ( fromIntegral(timer - 70) / 3.0)
+            pacpic = translatePacMan (dyingList!!currentIndex) (pacman gstate)
+            pellets = map (translatePellet (scaledlist!!1)) (pelletList (concat (maze gstate)))
+            superPellets = map (translatePellet (scaledlist!!2)) (superPelletList (concat (maze gstate)))
+            scoreText = [translateText (scaledlist!! 8) (-60) 270 ]
+            pacmanlives = translatePacmanLives (scaledlist!!3) (amountToListLives (lives gstate))
+            score = [translateScore (scoreList!!(intList!!0)) 10 270 , translateScore (scoreList!!(intList!!1)) 25 270, translateScore (scoreList!!(intList!!2)) 40 270, translateScore (scoreList!!(intList!!3)) 55 270 ]  
+                where 
+                    intList = calculateScore gstate
+        pictures (score ++ [scaledlist!!0] ++ pellets ++ superPellets ++ [pacpic] ++ scoreText ++ pacmanlives)
         
 
 

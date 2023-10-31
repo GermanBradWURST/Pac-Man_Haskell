@@ -82,6 +82,11 @@ step secs gstate
             then return $ initial
             else return $ gstate
 
+    | viewState gstate == Dying = do
+        let newCounter = deadCounter gstate + 1
+        if newCounter < 120
+                then return $ gstate {deadCounter = newCounter}
+                else return $ gstate {deadCounter = 0, viewState = Ready}
 
     | otherwise = return $ gstate
 
@@ -125,7 +130,7 @@ collisionGhostPacman pman (x:xs) gstate
                 (PacMan (px, py) pd) = pman
 
 collisionPacmanGhost :: PacMan -> GameState -> Ghost -> Ghost
-collisionPacmanGhost pman gstate g= if isClose (point pman) (gpoint g) 0.25 then toChase ( g {gpoint = (13,11), gTimer = 0} )else g
+collisionPacmanGhost pman gstate g = if isClose (point pman) (gpoint g) 0.25 then toChase ( g {gpoint = (13,11), gTimer = 0} )else g
     where 
         newScore = eatingGhosts (ghosts gstate)
         
@@ -150,7 +155,7 @@ loseLife gstate = gstate {lives = decreaseLive}
 
 -- resets the positions of pacman and the ghosts if pacman loses a life
 resetGame :: GameState -> GameState
-resetGame gstate | decreaseLife > 0 = gstate { pacman = initialPacMan, ghosts = initialGhosts, lives = decreaseLife, viewState = Ready, lastPressed = 'n'}
+resetGame gstate | decreaseLife > 0 = gstate { pacman = initialPacMan, ghosts = initialGhosts, lives = decreaseLife, viewState = Dying, lastPressed = 'n'}
                  | otherwise = gstate { pacman = initialPacMan, ghosts = initialGhosts, lives = decreaseLife, viewState = GameOver, lastPressed = 'n'}
     where
         blinky = Ghost Blinky Scatter (13, 11) GoRight 1 0.25 0 False
