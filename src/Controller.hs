@@ -104,16 +104,16 @@ loseLife gstate = gstate {lives = decreaseLive}
         
 
 toCage :: Ghost -> GameState -> GameState
-toCage (Ghost t m (x,y) d gtime s) gstate = gstate
+toCage (Ghost t m (x,y) d gtime s tt) gstate = gstate
 
 -- resets the positions of pacman and the ghosts if pacman loses a life
 resetGame :: GameState -> GameState
 resetGame gstate = gstate { pacman = initialPacMan, ghosts = initialGhosts, lives = decreaseLife}
     where
-        blinky = Ghost Blinky Scatter (13, 11) GoRight 1 0.25
-        inky = Ghost Inky Scatter (13, 11) GoRight 1 0.25
-        clyde = Ghost Clyde Scatter (13, 11) GoRight 1 0.25
-        pinky = Ghost Pinky Scatter (13, 11) GoRight 1 0.25
+        blinky = Ghost Blinky Scatter (13, 11) GoRight 1 0.25 0
+        inky = Ghost Inky Scatter (13, 11) GoRight 1 0.25 0
+        clyde = Ghost Clyde Scatter (13, 11) GoRight 1 0.25 0
+        pinky = Ghost Pinky Scatter (13, 11) GoRight 1 0.25 0
         initialPacMan = PacMan (14, 23) GoRight
         initialGhosts = [blinky, inky, pinky, clyde]
         decreaseLife = if (lives gstate) > 0 then (lives gstate) - 1 else (lives gstate)
@@ -186,6 +186,7 @@ gameOver gstate
 makeRound :: Float -> Float
 makeRound f = fromIntegral (round f)
 
+
 roundPoint :: (Float, Float) -> (Float, Float)
 roundPoint p = (makeRound (fst p), makeRound (snd p))
 
@@ -252,10 +253,17 @@ canMove (PacMan (x,y) pacdirec) maze = (snd nextTile) /= Wall && (snd nextTile) 
 
 --Ghost step calcs
 stepGhost :: GameState -> Ghost -> Ghost
-stepGhost gstate g | canChangeDirection gstate g = (ghostMoveOne (chooseGhost gstate g)) {gTimer = incrementTimer g}
-                   | checkWrap (gpoint g) (gdirection g) = wrapAroundGhost g
-                   | otherwise = ghostMoveOne g
+stepGhost gstate g | turnTimer g == 0 && canChangeDirection gstate g = (ghostMoveOne (chooseGhost gstate newg)) {turnTimer = ttf}
+                   | checkWrap (gpoint g) (gdirection g) = decreaseturnTimer (wrapAroundGhost newg)
+                   | otherwise = decreaseturnTimer (ghostMoveOne newg)
+                   where ttf | mode g == Frightened = 4
+                             | otherwise = 2
+                         newg = g {gTimer = incrementTimer g}
                       
+decreaseturnTimer :: Ghost -> Ghost
+decreaseturnTimer g | tt > 0 = g {turnTimer = (tt - 1)}
+                    | otherwise = g
+                where tt = turnTimer g
                            
 
 
