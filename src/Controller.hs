@@ -36,8 +36,9 @@ step :: Float -> GameState -> IO GameState
 step secs gstate
     | (viewState gstate) == Running = do
         let isFrightened = checkGhostFrightened (ghosts gstate)
+        let ghostsl = teleportGhost gstate
         let pman = stepPacMan gstate
-        let glist = map (stepGhost gstate) (ghosts gstate)
+        let glist = map (stepGhost gstate) (ghostsl)
         let pelletmaze = [[eatPellet tile pman | tile <- row] | row <- maze gstate] -- checking if the current pacman is eating a pellet
         let newmaze = [[eatSuperPellet tile pman | tile <- row] | row <- pelletmaze] -- checking if the current pacman is eating a super pellet
         let newScore = 10  * (260 - (calculateScore (concat(maze gstate))))
@@ -104,20 +105,28 @@ loseLife gstate = gstate {lives = decreaseLive}
         
 
 toCage :: Ghost -> GameState -> GameState
-toCage (Ghost t m (x,y) d gtime s tt) gstate = gstate
+toCage (Ghost t m (x,y) d gtime s tt b) gstate = gstate
 
 -- resets the positions of pacman and the ghosts if pacman loses a life
 resetGame :: GameState -> GameState
 resetGame gstate = gstate { pacman = initialPacMan, ghosts = initialGhosts, lives = decreaseLife}
     where
-        blinky = Ghost Blinky Scatter (13, 11) GoRight 1 0.25 0
-        inky = Ghost Inky Scatter (13, 11) GoRight 1 0.25 0
-        clyde = Ghost Clyde Scatter (13, 11) GoRight 1 0.25 0
-        pinky = Ghost Pinky Scatter (13, 11) GoRight 1 0.25 0
+        blinky = Ghost Blinky Scatter (13, 11) GoRight 1 0.25 0 False
+        inky = Ghost Inky Scatter (13, 14) GoRight 1 0.25 0 True
+        clyde = Ghost Clyde Scatter (13, 14) GoRight 1 0.25 0 True
+        pinky = Ghost Pinky Scatter (13, 14) GoRight 1 0.25 0 True
         initialPacMan = PacMan (14, 23) GoRight
         initialGhosts = [blinky, inky, pinky, clyde]
         decreaseLife = if (lives gstate) > 0 then (lives gstate) - 1 else (lives gstate)
 
+
+teleportGhost :: GameState -> [Ghost]
+teleportGhost gstate | s >= 50 && inHouse pink = [blink, ink, pink {gpoint = (13, 11), inHouse = False}, clyd]
+                     | s >= 300 && inHouse ink = [blink, ink {gpoint = (13,11), inHouse = False}, pink, clyd]
+                     | s >= 900 && inHouse clyd = [blink, ink, pink, clyd {gpoint = (13,11), inHouse = False}]
+                     | otherwise = glist
+                 where glist@[blink,ink,pink,clyd] = ghosts gstate
+                       s = score gstate
 
 upDateGhostTime :: Bool -> Float -> Float -> Float
 upDateGhostTime b f secs | not b = f + secs

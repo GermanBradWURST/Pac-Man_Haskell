@@ -116,7 +116,7 @@ amountToListLives i
 
 
 translateGhost :: Picture -> Ghost -> Picture
-translateGhost pict (Ghost gtype mode (xs, ys) direc time speed tt) = translate (x*16-216) (240-(y*16)) d
+translateGhost pict (Ghost gtype mode (xs, ys) direc time speed tt b) = translate (x*16-216) (240-(y*16)) d
             where
                     pos = (xs,ys)
                     x =  fst pos

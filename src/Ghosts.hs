@@ -14,6 +14,7 @@ data Ghost = Ghost {
     , gTimer :: Int
     , speed :: Float
     , turnTimer :: Int
+    , inHouse :: Bool
 }
 
 wrapAroundGhost :: Ghost -> Ghost
