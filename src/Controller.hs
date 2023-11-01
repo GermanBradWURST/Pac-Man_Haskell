@@ -47,10 +47,11 @@ step secs gstate
         let newGhostTimer = upDateGhostTime isFrightened (ghostTimer gstate) secs
         let possibleGameOver = viewState (gameOver gstate)
         let possibleEatenGhost = map (collisionPacmanGhost pman gstate) (ghostsMode) 
+        let ghostScore = eatingGhosts pman ghostsMode + newScore
         
         if newlives < lives gstate
             then return $ resetGame gstate
-            else return $ gstate { viewState = possibleGameOver, elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = possibleEatenGhost, score = newScore, ghostTimer = newGhostTimer, lives = newlives}
+            else return $ gstate { viewState = possibleGameOver, elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = possibleEatenGhost, score = ghostScore, ghostTimer = newGhostTimer, lives = newlives}
     | (viewState gstate) == Paused = do
         return $ gstate
 
@@ -93,6 +94,8 @@ step secs gstate
                 else return $ gstate {deadCounter = 0, viewState = nextState, pacman = initial}
     | otherwise = return $ gstate
 
+
+-- Handles pacman taking a single step, be checking if he is wrapping, and if he can make a move
 stepPacMan :: GameState -> PacMan
 stepPacMan gstate | checkWrap (point (pacman gstate)) (direction (pacman gstate)) = wrapAroundPacMan (pacman gstate)
                   | canMove (pacman gstate) (maze gstate) = movePacMan (pacman gstate) gstate
@@ -124,6 +127,8 @@ calculateScore tiles  = (length (pelletList tiles))  + (5 * (length (superPellet
 scoreChange :: Int -> Int -> Bool
 scoreChange oldscore newscore = abs (oldscore - newscore) > 10 
 
+
+-- Used to check if a ghosts collides with PacMan while the ghost is not frightened
 collisionGhostPacman :: PacMan -> [Ghost] -> GameState -> GameState
 collisionGhostPacman pman [] gstate = gstate
 collisionGhostPacman pman (x:xs) gstate
@@ -132,22 +137,24 @@ collisionGhostPacman pman (x:xs) gstate
             where
                 (PacMan (px, py) pd) = pman
 
+-- Used to check if PacMan collides with a ghost while a ghost is frightened
 collisionPacmanGhost :: PacMan -> GameState -> Ghost -> Ghost
 collisionPacmanGhost pman gstate g = if isClose (point pman) (gpoint g) 0.25 then toChase ( g {gpoint = (13,11), gTimer = 0} )else g
     where 
-        newScore = eatingGhosts (ghosts gstate)
+        newScore = calcEatGhostPoints (eatingGhosts pman (ghosts gstate))
         
-                
-eatingGhosts :: [Ghost] -> Int
-eatingGhosts [] = 0
-eatingGhosts (x:xs)
-    | (mode x) /= Frightened = calcEatGhostPoints (incr + 1) + eatingGhosts xs
-    | otherwise = eatingGhosts xs
-    where
-        incr = 0
+
+
+
+-- Generating points 
+eatingGhosts :: PacMan -> [Ghost]-> Int
+eatingGhosts pman [] = 0
+eatingGhosts pman (x:xs) = if (mode x) == Frightened then 0 + eatingGhosts pman xs else 1 + eatingGhosts pman xs
 
 calcEatGhostPoints :: Int -> Int
-calcEatGhostPoints i = 200 * (2^i)
+calcEatGhostPoints 0 = 0
+calcEatGhostPoint n = do
+    200 * (2^(n-1)) + calcEatGhostPoint (n-1)
 
 loseLife :: GameState -> GameState
 loseLife gstate = gstate {lives = decreaseLive}

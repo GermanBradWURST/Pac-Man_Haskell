@@ -41,11 +41,11 @@ viewPure gstate = case viewState gstate of
         pictures ([pacPause] ++ [pauseText])
     
     GameOver -> do
-        let scaledText = map (Scale 2.0 2.0) ([(images gstate)!!21] ++ [(images gstate)!!8])
-            scoreList = map (Scale 2.0 2.0 ) (drop 9 (images gstate))
+        let scaledText = map (Scale 3.0 3.0) ([(images gstate)!!21] ++ [(images gstate)!!8])
+            scoreList = map (Scale 3.0 3.0 ) (drop 9 (images gstate))
             gameover = translateText (scaledText!!0) 0 (20)
-            scoreText = [translateText (scaledText!!1) (-80) (-50) ]
-            score = [translateScore (scoreList!!(intList!!0)) 10 (-50) , translateScore (scoreList!!(intList!!1)) 35 (-50), translateScore (scoreList!!(intList!!2)) 30 (-50), translateScore (scoreList!!(intList!!3)) 45 (-50) ]
+            scoreText = [translateText (scaledText!!1) (-50) (-50) ]
+            score = [translateScore (scoreList!!(intList!!0)) 40 (-50) , translateScore (scoreList!!(intList!!1)) 65 (-50), translateScore (scoreList!!(intList!!2)) 90 (-50), translateScore (scoreList!!(intList!!3)) 115 (-50) ]
                 where 
                     intList = calculateScore gstate 
         pictures ([gameover]++score++scoreText)
