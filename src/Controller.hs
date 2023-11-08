@@ -10,6 +10,25 @@ import Graphics.Gloss.Interface.IO.Game
 
 import System.Random
 import Control.Concurrent (dupChan)
+import System.IO
+import Control.Exception (catch, IOException)
+
+
+
+
+updateHighScore :: String -> IO ()
+updateHighScore newHighScore = do
+    catch (writeToFile) (\e -> handleException e)
+
+  where
+    writeToFile = withFile "src/HighScore.txt" WriteMode $ \handle -> do
+        hPutStr handle newHighScore
+
+    handleException :: IOException -> IO ()
+    handleException e = putStrLn ("Error updating high score: " ++ show e)
+
+
+
 
 
 searchMaze :: Maze -> (Float, Float) -> Tile
@@ -67,6 +86,13 @@ step secs gstate
 
     | (viewState gstate) == GameOver = do
         levelfile <- readFile "src/Level1.txt"
+        currentHighScore <- readFile "src/HighScore.txt"
+    
+        let newHighScore = show (score gstate)
+        if length newHighScore > 0
+            then updateHighScore newHighScore
+            else return ()
+    
         let level = lines levelfile
         let maze = makeMaze level
         let lst = lastPressed gstate
@@ -93,6 +119,7 @@ step secs gstate
                 then return $ gstate {deadCounter = newCounter}
                 else return $ gstate {deadCounter = 0, viewState = nextState, pacman = initial}
     | otherwise = return $ gstate
+                  
 
 
 -- Handles pacman taking a single step, be checking if he is wrapping, and if he can make a move
@@ -100,6 +127,8 @@ stepPacMan :: GameState -> PacMan
 stepPacMan gstate | checkWrap (point (pacman gstate)) (direction (pacman gstate)) = wrapAroundPacMan (pacman gstate)
                   | canMove (pacman gstate) (maze gstate) = movePacMan (pacman gstate) gstate
                   | otherwise = pacman gstate
+
+
 
 
 -- handles pacman eating pellets (and keeping score)
@@ -144,8 +173,6 @@ collisionPacmanGhost pman gstate g = if isClose (point pman) (gpoint g) 0.25 the
         newScore = calcEatGhostPoints (eatingGhosts pman (ghosts gstate))
         
 
-
-
 -- Generating points 
 eatingGhosts :: PacMan -> [Ghost]-> Int
 eatingGhosts pman [] = 0
@@ -153,8 +180,7 @@ eatingGhosts pman (x:xs) = if (mode x) == Frightened then 0 + eatingGhosts pman 
 
 calcEatGhostPoints :: Int -> Int
 calcEatGhostPoints 0 = 0
-calcEatGhostPoint n = do
-    200 * (2^(n-1)) + calcEatGhostPoint (n-1)
+calcEatGhostPoint n = 200 * n
 
 loseLife :: GameState -> GameState
 loseLife gstate = gstate {lives = decreaseLive}
