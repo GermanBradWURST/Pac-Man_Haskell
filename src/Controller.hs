@@ -17,18 +17,11 @@ import Control.Exception (catch, IOException)
 
 
 updateHighScore :: String -> IO ()
-updateHighScore newHighScore = do
-    catch (writeToFile) (\e -> handleException e)
-
-  where
-    writeToFile = withFile "src/HighScore.txt" WriteMode $ \handle -> do
-        hPutStr handle newHighScore
-
-    handleException :: IOException -> IO ()
-    handleException e = putStrLn ("Error updating high score: " ++ show e)
-
-
-
+updateHighScore  score = do
+    handle <- openFile "src/HighScore.txt" WriteMode
+    hPrint handle ("The current highscore is " ++ score)
+    hFlush handle
+    hClose handle
 
 
 searchMaze :: Maze -> (Float, Float) -> Tile
@@ -86,12 +79,10 @@ step secs gstate
 
     | (viewState gstate) == GameOver = do
         levelfile <- readFile "src/Level1.txt"
-        currentHighScore <- readFile "src/HighScore.txt"
-    
+
         let newHighScore = show (score gstate)
-        if length newHighScore > 0
-            then updateHighScore newHighScore
-            else return ()
+        updateHighScore newHighScore
+           
     
         let level = lines levelfile
         let maze = makeMaze level
