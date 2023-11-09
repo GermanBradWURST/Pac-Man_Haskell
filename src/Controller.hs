@@ -19,9 +19,16 @@ import Control.Exception (catch, IOException)
 updateHighScore :: String -> IO ()
 updateHighScore  score = do
     handle <- openFile "src/HighScore.txt" WriteMode
-    hPrint handle ("The current highscore is " ++ score)
+    hPrint handle score
     hFlush handle
     hClose handle
+
+readPrevScore :: IO Int
+readPrevScore = do
+    handle <- openFile "src/HighScore.txt" ReadMode
+    scoreString <- hGetLine handle
+    hClose handle
+    return (read (filter (/= '"') scoreString) :: Int)
 
 
 searchMaze :: Maze -> (Float, Float) -> Tile
@@ -79,9 +86,12 @@ step secs gstate
 
     | (viewState gstate) == GameOver = do
         levelfile <- readFile "src/Level1.txt"
-
+        -- oldScoreString <- withFile "src/HighScore.txt" ReadMode (\handle -> hGetContents handle)
+        ioScore <- readPrevScore
+        let pureScore = ioScore
         let newHighScore = show (score gstate)
-        updateHighScore newHighScore
+        if (score gstate) > pureScore then updateHighScore newHighScore else return ()
+       
            
     
         let level = lines levelfile
