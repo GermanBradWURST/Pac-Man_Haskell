@@ -31,7 +31,6 @@ main = do
     let initialstate = Model.initialState initialPacMan images maze ghosts
 
     
-    
 
     playIO (InWindow "PacMan" (448, 580) (0, 0))
              black

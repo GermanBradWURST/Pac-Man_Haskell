@@ -15,7 +15,7 @@ import Control.Exception (catch, IOException)
 
 
 
-
+-- updating the high score and making sure the file is closed after
 updateHighScore :: String -> IO ()
 updateHighScore  score = do
     handle <- openFile "src/HighScore.txt" WriteMode
@@ -23,12 +23,14 @@ updateHighScore  score = do
     hFlush handle
     hClose handle
 
+-- reading the present score, and making sure the file is closed after for writing
 readPrevScore :: IO Int
 readPrevScore = do
     handle <- openFile "src/HighScore.txt" ReadMode
     scoreString <- hGetLine handle
     hClose handle
     return (read (filter (/= '"') scoreString) :: Int)
+
 
 
 searchMaze :: Maze -> (Float, Float) -> Tile
@@ -43,7 +45,7 @@ checkWrap p d  | isClose p (0,14) 0.1 && d == GoLeft = True
                | isClose p (27, 14) 0.1 && d == GoRight = True
                | otherwise = False
                    
-
+-- frightened ghost need a random number for targeting tiles
 generateRandomNum :: (Int, Int) -> Int
 generateRandomNum (minn, maxx) = fst $ randomR (minn, maxx) iRNG
 
@@ -72,10 +74,11 @@ step secs gstate
         if newlives < lives gstate
             then return $ resetGame gstate
             else return $ gstate { viewState = possibleGameOver, elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = possibleEatenGhost, score = newScore, ghostTimer = newGhostTimer, lives = newlives}
+    -- what to do when the view state is paused      
     | (viewState gstate) == Paused = do
         return $ gstate
 
-
+    -- what to do when the viewState = ready
     | (viewState gstate) == Ready = do
         let lst = lastPressed gstate
             start | lst == 'a' || lst == 's' || lst == 'w' || lst == 'd' = True
@@ -84,7 +87,7 @@ step secs gstate
             then return $ gstate {viewState = Running}
             else return $ gstate
 
-
+    -- what to do when the game over state is reached
     | (viewState gstate) == GameOver = do
         levelfile <- readFile "src/Level1.txt"
         -- oldScoreString <- withFile "src/HighScore.txt" ReadMode (\handle -> hGetContents handle)
@@ -111,6 +114,7 @@ step secs gstate
             then return $ initial
             else return $ gstate
 
+    -- handling animation and putting everyone back in place, and go to ready state if there are lives left
     | viewState gstate == Dying = do
         let newCounter = deadCounter gstate + 1
         let initial = PacMan (14, 23) GoRight
@@ -175,7 +179,8 @@ collisionPacmanGhost pman gstate g = if isClose (point pman) (gpoint g) 0.25 the
         newScore = calcEatGhostPoints (eatingGhosts pman (ghosts gstate))
         
 
--- Generating points 
+-- eating ghosts rewards pacman two points, this function checks how many ghosts are eaten at a time and adds points accordingly
+-- using the helper function 'calcEatGhostPoints'
 eatingGhosts :: PacMan -> [Ghost]-> Int
 eatingGhosts pman [] = 0
 eatingGhosts pman (x:xs)    |(gTimer x) == 1 = 0 + eatingGhosts pman xs 
@@ -185,6 +190,7 @@ eatingGhosts pman (x:xs)    |(gTimer x) == 1 = 0 + eatingGhosts pman xs
 calcEatGhostPoints :: Int -> Int
 calcEatGhostPoints 0 = 0
 calcEatGhostPoints n = 200 * n
+
 
 loseLife :: GameState -> GameState
 loseLife gstate = gstate {lives = decreaseLive}
@@ -205,7 +211,7 @@ resetGame gstate | decreaseLife > 0 = gstate { ghosts = initialGhosts, lives = d
         initialGhosts = [blinky, inky, pinky, clyde]
         decreaseLife = if (lives gstate) > 0 then (lives gstate) - 1 else (lives gstate)
 
-
+-- not all ghosts start outside of the 'house', ghosts are teleported out according to the rules
 teleportGhost :: GameState -> [Ghost]
 teleportGhost gstate | s >= 50 && inHouse pink = [blink, ink, pink {gpoint = (13, 11), inHouse = False}, clyd]
                      | s >= 300 && inHouse ink = [blink, ink {gpoint = (13,11), inHouse = False}, pink, clyd]
@@ -222,6 +228,7 @@ checkGhostFrightened :: [Ghost] -> Bool
 checkGhostFrightened [] = False
 checkGhostFrightened (x:xs)  = mode x == Frightened || checkGhostFrightened xs
 
+-- ghost are in a certain mode depending on the playtime, this function handles mode switching of ghosts accordingly
 changeGhostMode :: Float -> Bool -> Bool -> [Ghost] -> [Ghost]
 changeGhostMode gt isf pred ghosts
     | pred = map toFrightened ghosts  
@@ -279,12 +286,9 @@ gameOver gstate
     | otherwise = gstate
 
 
+-- round returns an integer but we need a float, therefore, our own round function that rounds and than returns a float
 makeRound :: Float -> Float
 makeRound f = fromIntegral (round f)
-
-
-roundPoint :: (Float, Float) -> (Float, Float)
-roundPoint p = (makeRound (fst p), makeRound (snd p))
 
 
 --handling direction changes, pacman can't move in a certain direction if that would lead him 
@@ -304,15 +308,12 @@ changeDirection direc gstate
             m = maze gstate
 
 
+-- just an alias for round to make it more readable
 toInt :: Float -> Int 
 toInt f = round f
 
 
---Round a float up to the nearest int if .5 -> not to the nearest even int like normal rounding
-customRound :: Float -> Float
-customRound x = fromIntegral (floor (x + 0.1))
-
---helper function to check validity of a move
+--helper function to check validity of a move by checking if the desired move-to tile is not a wall or barrier
 validMove :: PacMan -> Direction -> Maze -> Bool
 validMove (PacMan (x,y) pacdirec) direc maze = (snd nextTile) /= Wall && (snd nextTile) /= Barrier
     where
@@ -327,7 +328,8 @@ validMove (PacMan (x,y) pacdirec) direc maze = (snd nextTile) /= Wall && (snd ne
                     |direc == GoLeft && intx > 0= currentRow !! (intx - 1)
                     |otherwise = currentRow !! intx
 
---allowing pacman to move, which as of now is just teleporting 1 block
+
+--moving pacman by 1/4th of a block each step, only if valid
 movePacMan :: PacMan -> GameState -> PacMan
 movePacMan p@(PacMan (x,y) pacdirec) gstate
     |(pacdirec == GoUp) && canMove p (maze gstate) = (PacMan (x,y-0.25) pacdirec)
@@ -337,7 +339,7 @@ movePacMan p@(PacMan (x,y) pacdirec) gstate
     |otherwise = p
 
 
--- checking if pacman is able to move or if this moves him into a wall
+-- pacman keeps walking, but must stop if he runs into a wall
 canMove :: PacMan -> Maze -> Bool
 canMove (PacMan (x,y) pacdirec) maze = (snd nextTile) /= Wall && (snd nextTile) /= Barrier
     where
@@ -498,7 +500,7 @@ findIndex [] x = 0
 findIndex (y:ys) x | x == y = 0
                    | otherwise = 1 + findIndex ys x 
 
--- calculates distance to target tile
+-- calculates distance to target tile by using the square root
 calcDist :: (Loadlevel.Point, Loadlevel.Point, Loadlevel.Direction) -> Float
 calcDist ((x1 , y1), (x2 , y2), d) = sqrt (x'*x' + y'*y')
     where
