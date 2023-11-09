@@ -66,11 +66,12 @@ step secs gstate
         let newGhostTimer = upDateGhostTime isFrightened (ghostTimer gstate) secs
         let possibleGameOver = viewState (gameOver gstate)
         let possibleEatenGhost = map (collisionPacmanGhost pman gstate) (ghostsMode) 
-        let ghostScore = eatingGhosts pman ghostsMode + newScore
+        let ghostScore = calcEatGhostPoints (eatingGhosts pman ghostsMode) + newScore
+        putStrLn (show (calcEatGhostPoints (eatingGhosts pman ghostsMode)))
         
         if newlives < lives gstate
             then return $ resetGame gstate
-            else return $ gstate { viewState = possibleGameOver, elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = possibleEatenGhost, score = ghostScore, ghostTimer = newGhostTimer, lives = newlives}
+            else return $ gstate { viewState = possibleGameOver, elapsedTime = elapsedTime gstate + secs, pacman = pman, maze = newmaze, ghosts = possibleEatenGhost, score = newScore, ghostTimer = newGhostTimer, lives = newlives}
     | (viewState gstate) == Paused = do
         return $ gstate
 
@@ -177,11 +178,13 @@ collisionPacmanGhost pman gstate g = if isClose (point pman) (gpoint g) 0.25 the
 -- Generating points 
 eatingGhosts :: PacMan -> [Ghost]-> Int
 eatingGhosts pman [] = 0
-eatingGhosts pman (x:xs) = if (mode x) == Frightened then 0 + eatingGhosts pman xs else 1 + eatingGhosts pman xs
+eatingGhosts pman (x:xs)    |(gTimer x) == 1 = 0 + eatingGhosts pman xs 
+                            |(gTimer x) < 1 && (mode x) == Chase = 1 + eatingGhosts pman xs
+                            |otherwise =  0 + eatingGhosts pman xs
 
 calcEatGhostPoints :: Int -> Int
 calcEatGhostPoints 0 = 0
-calcEatGhostPoint n = 200 * n
+calcEatGhostPoints n = 200 * n
 
 loseLife :: GameState -> GameState
 loseLife gstate = gstate {lives = decreaseLive}
