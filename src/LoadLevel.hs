@@ -2,6 +2,10 @@ module Loadlevel where
 
 data Direction = GoLeft | GoRight | GoUp | GoDown deriving (Show, Eq)
 
+-- We make a maze made up of tiles (which are tuples of their point on the board and the tiletype)
+-- we included the point in the tile (as opposed to using index), 
+-- because having to translate a point to an index in maze could invite unnecessary trouble later down the line
+
 type Point = (Float, Float)
 
 type Tile = (Point, Tiletype)

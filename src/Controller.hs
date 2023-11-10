@@ -39,7 +39,7 @@ searchMaze m (x, y) = (m!!inty)!!intx
         inty = toInt y 
         intx = toInt x
 
---Checks for wrap around
+--Checks for wrap around 
 checkWrap :: (Float, Float) -> Direction -> Bool
 checkWrap p d  | isClose p (0,14) 0.1 && d == GoLeft = True
                | isClose p (27, 14) 0.1 && d == GoRight = True
@@ -53,6 +53,7 @@ iRNG :: StdGen
 iRNG = mkStdGen 2231542
 
 -- | Handle one iteration of the game
+-- evaluates the state of the game (things like viewstate, wether a ghost is frightened and such) and changes the gamestate accordingly
 step :: Float -> GameState -> IO GameState
 step secs gstate
     | (viewState gstate) == Running = do
@@ -277,7 +278,7 @@ inputKey _ gstate = gstate
 pauseGame :: GameState -> Char -> Char -> GameState
 pauseGame gstate lastP c
     | c == 'p' && lastP == 'p' = gstate {viewState = Running, lastPressed = 'p'}
-    | c=='p' && lastP /= 'p' = gstate {viewState = Paused, lastPressed = 'p'}
+    | c =='p' && lastP /= 'p' = gstate {viewState = Paused, lastPressed = 'p'}
     |otherwise = gstate
 
 gameOver :: GameState -> GameState
@@ -354,7 +355,7 @@ canMove (PacMan (x,y) pacdirec) maze = (snd nextTile) /= Wall && (snd nextTile) 
                     |pacdirec == GoLeft && intx > 0= currentRow !! (intx - 1) 
                     |otherwise = currentRow !! intx
 
---Ghost step calcs
+--Ghost step calcs 
 stepGhost :: GameState -> Ghost -> Ghost
 stepGhost gstate g | turnTimer g == 0 && canChangeDirection gstate g = (ghostMoveOne (chooseGhost gstate newg)) {turnTimer = ttf}
                    | checkWrap (gpoint g) (gdirection g) = decreaseturnTimer (wrapAroundGhost newg)
@@ -390,7 +391,7 @@ ghostMoveOne g | gdirection g == GoUp = g {gpoint = (makeRound a, b + s)}
                     s = speed g
 
 
--- checks if a ghost can change direction
+-- checks if a ghost can change direction (uses two helper functions for clarity)
 canChangeDirection :: GameState -> Ghost -> Bool
 canChangeDirection gstate g | gdirection g == GoUp || gdirection g == GoDown = checkDirectionRightLeft (maze gstate) (gpoint g)
                             | gdirection g == GoLeft || gdirection g == GoRight = checkDirectionUpDown (maze gstate) (gpoint g)
@@ -418,7 +419,7 @@ checkDirectionRightLeft m p | t1 /= Barrier && t1 /= Wall = True
                            where ((a, b), t1) = searchMaze m (fst p + 1, snd p)
                                  ((c, d), t2) = searchMaze m (fst p - 1, snd p)
 
--- chooses target tile
+-- chooses target tile for each individual ghost (with different behaviour for chasing and scattering in each ghost)
 stepBlinky :: GameState -> Ghost -> Loadlevel.Point
 stepBlinky gstate g | mode g == Chase = (x,y)
                     | mode g == Scatter = (26.0, 0.0) 
@@ -478,7 +479,10 @@ stepClyde gstate g | mode g == Chase = (gx, gy)
 
 
 
-
+-- When evaluated if a ghost can change direction, this function looks at the directions the ghost can change to
+-- and filters all directions which head into a wall
+-- it then evaluates which of the leftover directions is closest to its target tile
+-- it uses pattern matching to extract the direction which the ghost will take from the item in the list with the same index as the index of the lowest float in the calcDist list
 
 choosePath :: GameState -> Ghost -> Loadlevel.Point -> Ghost
 choosePath gstate g (x,y) = g {gdirection = direct}

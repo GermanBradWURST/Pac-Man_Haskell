@@ -8,6 +8,8 @@ import Graphics.Gloss
 
 data ViewState = Running | Paused | GameOver | Ready | Dying deriving (Show, Eq)
 
+-- deadCounter starts counting up with each frame after PacMan dies, this is used for the dying animation
+
 data GameState = GameState {
       viewState :: ViewState
     , elapsedTime :: Float
