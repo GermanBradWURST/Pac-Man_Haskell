@@ -68,9 +68,7 @@ step secs gstate
         let newlives = lives (collisionGhostPacman pman ghostsMode gstate)
         let newGhostTimer = upDateGhostTime isFrightened (ghostTimer gstate) secs
         let possibleGameOver = viewState (gameOver gstate)
-        let possibleEatenGhost = map (collisionPacmanGhost pman gstate) (ghostsMode) 
-        let ghostScore = calcEatGhostPoints (eatingGhosts pman ghostsMode) + newScore
-        putStrLn (show (calcEatGhostPoints (eatingGhosts pman ghostsMode)))
+        let possibleEatenGhost = map (collisionPacmanGhost pman gstate) (ghostsMode)
         
         if newlives < lives gstate
             then return $ resetGame gstate
@@ -96,8 +94,6 @@ step secs gstate
         let pureScore = ioScore
         let newHighScore = show (score gstate)
         if (score gstate) > pureScore then updateHighScore newHighScore else return ()
-       
-           
     
         let level = lines levelfile
         let maze = makeMaze level
@@ -168,29 +164,15 @@ scoreChange oldscore newscore = abs (oldscore - newscore) > 10
 collisionGhostPacman :: PacMan -> [Ghost] -> GameState -> GameState
 collisionGhostPacman pman [] gstate = gstate
 collisionGhostPacman pman (x:xs) gstate
-    | isClose (px, py) (gpoint x) 0.50 && (mode x) /= Frightened = loseLife gstate
+    | isClose (px, py) (gpoint x) 0.25 && (mode x) /= Frightened = loseLife gstate
     | otherwise = collisionGhostPacman pman xs gstate
             where
                 (PacMan (px, py) pd) = pman
 
 -- Used to check if PacMan collides with a ghost while a ghost is frightened
 collisionPacmanGhost :: PacMan -> GameState -> Ghost -> Ghost
-collisionPacmanGhost pman gstate g = if isClose (point pman) (gpoint g) 0.25 then toChase ( g {gpoint = (13,11), gTimer = 0} )else g
-    where 
-        newScore = calcEatGhostPoints (eatingGhosts pman (ghosts gstate))
-        
-
--- eating ghosts rewards pacman two points, this function checks how many ghosts are eaten at a time and adds points accordingly
--- using the helper function 'calcEatGhostPoints'
-eatingGhosts :: PacMan -> [Ghost]-> Int
-eatingGhosts pman [] = 0
-eatingGhosts pman (x:xs)    |(gTimer x) == 1 = 0 + eatingGhosts pman xs 
-                            |(gTimer x) < 1 && (mode x) == Chase = 1 + eatingGhosts pman xs
-                            |otherwise =  0 + eatingGhosts pman xs
-
-calcEatGhostPoints :: Int -> Int
-calcEatGhostPoints 0 = 0
-calcEatGhostPoints n = 200 * n
+collisionPacmanGhost pman gstate g = if isClose (point pman) (gpoint g) 0.25
+    then toChase ( g {gpoint = (13,11), gTimer = 1} )else g
 
 
 loseLife :: GameState -> GameState
@@ -233,7 +215,7 @@ checkGhostFrightened (x:xs)  = mode x == Frightened || checkGhostFrightened xs
 changeGhostMode :: Float -> Bool -> Bool -> [Ghost] -> [Ghost]
 changeGhostMode gt isf pred ghosts
     | pred = map toFrightened ghosts  
-    | ((gTimer fstGhost) `mod` 140 == 0) && ((mode fstGhost) == Frightened) = map toChase ghosts
+    | anyGhostFrightOver && anyGhostIsFrightened = map toChase ghosts
     | not isf && gt > 84 = map toChase ghosts
     | not isf && gt > 79 = map toScatter ghosts
     | not isf && gt > 59 = map toChase ghosts
@@ -244,6 +226,11 @@ changeGhostMode gt isf pred ghosts
     | otherwise = ghosts
     where
         fstGhost = ghosts!!0
+        sndGhost = ghosts!!1
+        thdGhost = ghosts!!2
+        fthGhost = ghosts!!3
+        anyGhostFrightOver = ((gTimer fstGhost) `mod` 140 == 0) || ((gTimer sndGhost) `mod` 140 == 0) || ((gTimer thdGhost) `mod` 140 == 0) || ((gTimer fthGhost) `mod` 140 == 0)
+        anyGhostIsFrightened = checkGhostFrightened ghosts
         
 -- change the mode of the ghosts to frightened
 toFrightened :: Ghost -> Ghost
